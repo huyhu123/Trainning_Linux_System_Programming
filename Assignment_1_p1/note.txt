@@ -1,0 +1,125 @@
+#!/bin/bash : tell the shell script which intepeter to use
+
+cmod u+x calculator.sh : give the owner only permission to the file
+
+-----
+Variables:
+    MY_MESSAGE="Hello World"
+        All data are store as string
+
+Scope of Variables:
+    - Variables do not have to be declared
+        -> try to read an undeclared variable -> empty string
+    
+    export MY_MESSAGE:  inherited by another program
+    local in function
+
+$0 .. $9 and $#:
+    $0 is the basename of the program as it was called
+    $1 .. $9 are the first 9 additional parameters
+    $@ is all parameters ($1 ... )
+    $# is the number of parameters the script was called with.
+
+    $? contains the exit value of the last run command.
+    $$ variable is the PID (Process IDentifier) of the currently running shell. 
+    $! variable is the PID of the last run background process.
+
+Use shift to except more than 9 value:
+    while [ "$#" -gt "0" ]
+    do
+        echo "\$1 is $1"
+        shift
+    done 
+
+Using default value:
+    ":-" specify a default value to use if the variable is unset
+        echo "Your name is : ${myname:-`whoami`}"
+-----
+Loops
+    For Loops: loops iterate through a set of values until the list is exhausted
+        for i in hello 1 * 2 goodbye 
+        do
+            echo "Looping ... i is set to $i"
+        done
+
+    While Loops:
+        while [ "$INPUT_STRING" != "bye" ]
+        do
+            echo "Please type something in (bye to quit)"
+            read INPUT_STRING
+            echo "You typed: $INPUT_STRING"
+        done
+
+        (:) always evaluates to true
+            while :
+            do
+                echo "Please type something in (^C to quit)"
+            done
+        
+------
+Test ([): [ is a symbolic link to test
+        -> This means that '[' is actually a program, just like ls and other programs, so it must be surrounded by spaces
+
+
+
+-----
+Conditional expression
+
+if if else else
+
+    if [ ... ]
+    then
+        # if-code
+    else
+        # else-code
+    fi
+
+    - fi is if backwards
+    -  "then" commands must be on different lines or use ; to seperate
+        if [ ... ]; then
+            # do something
+        fi
+
+    Simpler way of writing if statements:
+        && give code to run if the result is true
+        || give code to run if the result is false
+            [ $X -ne 0 ] && echo "X isn't zero" || echo "X is zero"
+
+Case
+    case $INPUT_STRING in
+        hello)
+            echo "Hello!"
+            ;;
+        bye)
+            echo "See you again!"
+            break
+            ;;
+        *)
+            echo "Sorry, I don't understand"
+            ;;
+    esac
+
+-------
+The backslash (\) tells the shell that this is not the end of the line
+The semicolon (;) join two lines together
+
+--------
+External Programs ( tr, grep, expr and cut, ...)
+    The backtick (`) indicate that the enclosed text is to be executed as a command. 
+        MYNAME=`grep "^${USER}:" /etc/passwd | cut -d: -f5`
+            (use to grab output into a variable)
+
+-------
+Functions:
+    add_a_user()
+    {
+        USER=$1
+        PASSWORD=$2
+        shift; shift;
+        # Having shifted twice, the rest is now comments ...
+        COMMENTS=$@
+        echo "Adding user $USER ..."
+        echo useradd -c "$COMMENTS" $USER
+        echo passwd $USER $PASSWORD
+        echo "Added user $USER ($COMMENTS) with pass $PASSWORD"
+    }

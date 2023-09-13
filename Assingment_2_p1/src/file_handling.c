@@ -112,7 +112,7 @@ bool is_validfile_name(const char *file_name)
 }
 
 // Create new file name with the directory and extention of old file name 
-void create_new_file_name(char *new_file_name, char *file_name, char *output_name, char *output_dir)
+void create_new_file_name(char *new_file_name, char *file_name, char *output_name, char *dir)
 {
     // Get file extension
     char *ext = strrchr(file_name, '.');
@@ -123,19 +123,83 @@ void create_new_file_name(char *new_file_name, char *file_name, char *output_nam
     }
 
     // Make new file name
-    strcpy(new_file_name, output_dir);
+    strcpy(new_file_name, dir);
     strcat(new_file_name, "/");
     strcat(new_file_name, output_name);
     strcat(new_file_name, ".");
     strcat(new_file_name, ext);
 }
 
+char *convert_file_type(char type)
+{
+    switch (type) {
+        case 'd':
+            return "directory";
+        case 'b':
+            return "block file";
+        case 'l':
+            return "symbolic file";
+        case 'c':
+            return "charactor device file";
+        case 's':
+            return "socket file";
+        case 'p':
+            return "pipe file";
+        case '-':
+            return "regular file";
+        default:
+            return "unknown";
+    }
+}
+
+#include <stdbool.h>
+
+void extract_file_info(const char* filename) {
+    FILE* file = fopen(filename, "r");
+    if (file == NULL) {
+        printf("Failed to open the file.\n");
+        return;
+    }
+
+    printf("\n%-20s %-20s\n", "File name", "File type");
+    printf("--------------------------------------\n");
+    char line[MAX_LINE_SIZE];
+    bool skip_first_line = true; // Flag for skipping the first line
+    while (fgets(line, sizeof(line), file)) {
+        if (skip_first_line) {
+            skip_first_line = false;
+            continue; // Skip the first line
+        }
+
+        char* token = strtok(line, " \n");
+        if (token != NULL) {
+            char* last_word = token; // Initialize last_word with the first token
+            while (token != NULL) {
+                last_word = token;
+                token = strtok(NULL, " \n");
+            }
+            printf("%-20s %-20s\n", last_word, convert_file_type(line[0]));
+        }
+    }
+
+    fclose(file);
+}
+
 void list_file_in_dir(char *dir) 
 {
+    // Create and run command "ls -l 'directory' > temp.txt"
     char command[100];
-    strcpy(command, "ls");
+    strcpy(command, "ls -l");
     strcat(command, " ");
     strcat(command, dir);
+    strcat(command, " > temp.txt");
     system(command);
+
+    // Get file infomation
+    extract_file_info("temp.txt");
+
+    // Delete temp.txt
+    system("rm -rf temp.txt");
+
     return;
 }

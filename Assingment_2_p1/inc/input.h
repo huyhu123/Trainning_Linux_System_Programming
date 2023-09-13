@@ -11,9 +11,9 @@
 /**
  * @brief Changes the output directory.
  *
- * @param output_dir The new output directory.
+ * @param dir The new output directory.
  */
-void change_output_dir(char *output_dir);
+bool get_input_dir(char *dir);
 
 /**
  * @brief Changes the output file name.

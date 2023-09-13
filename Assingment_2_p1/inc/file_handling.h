@@ -9,6 +9,7 @@
 #include <dirent.h>
 
 #define MAX_FILE_SIZE 255
+#define MAX_LINE_SIZE 256
 
 /**
  * @brief Reads the contents of a file into a string.
@@ -89,10 +90,21 @@ bool is_validfile_name(const char *file_name);
  * @param new_file_name Pointer to a character buffer where the new file name will be stored.
  * @param file_name The name of the input file.
  * @param output_name The desired name for the output file.
- * @param output_dir The directory path where the output file will be created.
+ * @param dir The directory path where the output file will be created.
  */
-void create_new_file_name(char *new_file_name, char *file_name, char *output_name, char *output_dir);
+void create_new_file_name(char *new_file_name, char *file_name, char *output_name, char *dir);
 
+/**
+ * \brief Lists all the files in a directory.
+ *
+ * This function takes a directory path as input and lists all the files
+ * (excluding subdirectories) present in that directory.
+ *
+ * \param dir A pointer to a character array containing the path of the directory.
+ * \note The directory path must be a valid path.
+ *
+ * \return None.
+ */
 void list_file_in_dir(char *dir);
 
 #endif

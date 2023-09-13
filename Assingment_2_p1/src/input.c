@@ -129,27 +129,29 @@ void change_output_name(char *output_name)
 }
 
 // Change directory and check if dir is exist
-void change_output_dir(char *output_dir)
+bool get_input_dir(char *dir)
 {
     char pre_output_name[FILE_NAME_MAX];
-    strcpy(pre_output_name, output_dir);
+    strcpy(pre_output_name, dir);
 
     // Get output dir
-    printf("Enter new output dir (or e to exit): ");
-    get_input_char(output_dir);
-    if (strcmp(output_dir, "e") == 0) {
-        strcpy(output_dir, pre_output_name);
-        return;
+    printf("Enter a directory (or e to exit): ");
+    get_input_char(dir);
+    if (strcmp(dir, "e") == 0) {
+        strcpy(dir, pre_output_name);
+        return false;
     }
 
     // Check if dir exist
-    while (!directory_exists(output_dir)) {
+    while (!directory_exists(dir)) {
         printf("Directory not exist, enter again (or e to exit): ");
-        get_input_char(output_dir);
-        if (strcmp(output_dir, "e") == 0) {
-            strcpy(output_dir, pre_output_name);
-            return;
+        get_input_char(dir);
+        if (strcmp(dir, "e") == 0) {
+            strcpy(dir, pre_output_name);
+            return false;
         }
     }
+
+    return true;
 }
 

@@ -2,10 +2,11 @@
 #include "file_handling.h"
 
 int main() {
-    list_file_in_dir("/home/huy");
+    char dir[MAX_FILE_SIZE];
+
+    if(get_input_dir(dir)) {
+        list_file_in_dir(dir);
+    }
+
     return 0;
 }
-
-
-
-

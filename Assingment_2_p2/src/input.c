@@ -104,25 +104,25 @@ bool get_file_name(char *file_name)
 }
 
 // Change name of a char * and check if name is a valid file name
-bool get_output_name(char *output_name)
+bool get_output_name(char *file_name)
 {
     char pre_file_name[FILE_NAME_MAX] = "";
-    strcpy(pre_file_name, output_name);
+    strcpy(pre_file_name, file_name);
 
     // Get output file name
     printf("Enter new output file name (or e to exit): ");
-    get_input_char(output_name);
-    if (strcmp(output_name, "e") == 0) {
-        strcpy(output_name, pre_file_name);
+    get_input_char(file_name);
+    if (strcmp(file_name, "e") == 0) {
+        strcpy(file_name, pre_file_name);
         return false;
     }
 
     // Check if name valid
-    while (!is_validfile_name(output_name)) {
+    while (!is_validfile_name(file_name)) {
         printf("Invalid file name (contain '\\/:*?\"<>|', too long or have space, '.' at start or end)\n Enter again (or e to exit): ");
-        get_input_char(output_name);
-        if (strcmp(output_name, "e") == 0) {
-            strcpy(output_name, pre_file_name);
+        get_input_char(file_name);
+        if (strcmp(file_name, "e") == 0) {
+            strcpy(file_name, pre_file_name);
             return false;
         }
     }

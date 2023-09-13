@@ -201,3 +201,17 @@ void list_file_in_dir(char *dir)
 
     return;
 }
+
+void search_file_in_dir(char *dir)
+{
+    // Create and run command "ls 'directory' > temp.txt"
+    char command[100] = "";
+    strcpy(command, "ls");
+    strcat(command, " ");
+    strcat(command, dir);
+    strcat(command, " > temp.txt");
+    system(command);
+
+    // Delete temp.txt
+    system("rm -rf temp.txt");
+}

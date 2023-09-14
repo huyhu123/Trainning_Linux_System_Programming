@@ -107,6 +107,8 @@ void create_new_file_name(char *new_file_name, char *file_name, char *output_nam
  */
 void list_file_in_dir(char *dir);
 
-void search_file_in_dir(char *dir);
+bool search_file_in_dir(char *dir, char *name);
+
+bool get_output_name(char *file_name);
 
 #endif

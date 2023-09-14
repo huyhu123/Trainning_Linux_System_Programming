@@ -202,16 +202,48 @@ void list_file_in_dir(char *dir)
     return;
 }
 
-void search_file_in_dir(char *dir)
+int is_name_in_dir(const char *filename, const char *name) 
 {
+    FILE *file = fopen(filename, "r");
+    char line[MAX_LINE_SIZE] = {0};
+
+    if (file == NULL) {
+        printf("Could not open the file.\n");
+        return 0;
+    }
+
+    while (fgets(line, sizeof(line), file)) {
+        line[strcspn(line, "\n")] = '\0'; // Remove newline character
+        
+        if (strcmp(line, name) == 0) {
+            fclose(file);
+            return 1;
+        }
+    }
+    
+    fclose(file);
+    return 0;
+}
+
+bool search_file_in_dir(char *dir, char *name)
+{
+    char file[MAX_FILE_SIZE] = {0};
+    char command[MAX_LINE_SIZE] = {0};
+
     // Create and run command "ls 'directory' > temp.txt"
-    char command[100] = "";
     strcpy(command, "ls");
     strcat(command, " ");
     strcat(command, dir);
     strcat(command, " > temp.txt");
     system(command);
 
+    // Check if file exist in dir
+    if (is_name_in_dir("temp.txt", name)) {
+        return true;
+    }
+    return false;
+
     // Delete temp.txt
     system("rm -rf temp.txt");
 }
+

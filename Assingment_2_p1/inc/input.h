@@ -5,8 +5,8 @@
 #include <ctype.h>
 #include "file_handling.h"
 
-#define BUFFER_LENGTH       100
-#define FILE_NAME_MAX       255
+#define BUFFER_LENGTH 100
+#define FILE_NAME_MAX 255
 
 /**
  * @brief Changes the output directory.

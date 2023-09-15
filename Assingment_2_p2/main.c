@@ -1,11 +1,13 @@
 #include "input.h"
 #include "file_handling.h"
 
-int main() {
+int main()
+{
     char filename[FILE_NAME_MAX] = "";
     char text[BUFFER_LENGTH] = "";
 
-    if (!get_file_name(filename)) {
+    if (!get_file_name(filename))
+    {
         return 0;
     }
 

@@ -1,10 +1,12 @@
 #include "input.h"
 #include "file_handling.h"
 
-int main() {
+int main()
+{
     char dir[MAX_FILE_SIZE] = "";
 
-    if(get_input_dir(dir)) {
+    if (get_input_dir(dir))
+    {
         list_file_in_dir(dir);
     }
 

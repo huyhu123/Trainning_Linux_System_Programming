@@ -10,6 +10,7 @@
 
 #define MAX_FILE_SIZE 255
 #define MAX_LINE_SIZE 256
+#define BUFFER_LEN    4026
 
 /**
  * @brief Reads the contents of a file into a string.
@@ -110,5 +111,9 @@ void list_file_in_dir(char *dir);
 bool search_file_in_dir(char *dir, char *name);
 
 bool get_output_name(char *file_name);
+
+void create_hard_link(char *dest_file, char *src_file);
+
+void create_soft_link(char *dest_file, char *src_file);
 
 #endif

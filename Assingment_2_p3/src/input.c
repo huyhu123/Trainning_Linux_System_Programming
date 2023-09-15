@@ -110,7 +110,7 @@ bool get_output_name(char *file_name)
     strcpy(pre_file_name, file_name);
 
     // Get output file name
-    printf("Enter new output file name (or e to exit): ");
+    printf("Enter file name (or e to exit): ");
     get_input_char(file_name);
     if (strcmp(file_name, "e") == 0) {
         strcpy(file_name, pre_file_name);

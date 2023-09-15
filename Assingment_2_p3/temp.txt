@@ -1,7 +1,0 @@
-inc
-main
-main.c
-makefile
-note.txt
-src
-temp.txt

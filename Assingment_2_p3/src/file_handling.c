@@ -229,6 +229,7 @@ bool search_file_in_dir(char *dir, char *name)
 {
     char file[MAX_FILE_SIZE] = {0};
     char command[MAX_LINE_SIZE] = {0};
+    bool return_value = false;
 
     // Create and run command "ls 'directory' > temp.txt"
     strcpy(command, "ls");
@@ -239,11 +240,12 @@ bool search_file_in_dir(char *dir, char *name)
 
     // Check if file exist in dir
     if (is_name_in_dir("temp.txt", name)) {
-        return true;
+        return_value = true;
     }
-    return false;
 
     // Delete temp.txt
     system("rm -rf temp.txt");
+
+    return return_value;
 }
 

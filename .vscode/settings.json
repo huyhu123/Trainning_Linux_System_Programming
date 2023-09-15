@@ -1,6 +1,8 @@
 {
     "files.associations": {
         "typeinfo": "c",
-        "file_handling.h": "c"
+        "file_handling.h": "c",
+        "compare": "c",
+        "type_traits": "c"
     }
 }

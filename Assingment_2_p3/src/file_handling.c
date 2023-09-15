@@ -152,7 +152,7 @@ char *convert_file_type(char type)
     }
 }
 
-void extract_file_info(const char* filename) {
+void extract_file_info(const char *filename) {
     FILE* file = fopen(filename, "r");
     if (file == NULL) {
         printf("Failed to open the file.\n");
@@ -169,9 +169,9 @@ void extract_file_info(const char* filename) {
             continue; // Skip the first line
         }
 
-        char* token = strtok(line, " \n");
+        char *token = strtok(line, " \n");
         if (token != NULL) {
-            char* last_word = token; // Initialize last_word with the first token
+            char *last_word = token; // Initialize last_word with the first token
             while (token != NULL) {
                 last_word = token;
                 token = strtok(NULL, " \n");

@@ -18,12 +18,12 @@ static bool check_input_buffer(char input[])
     return false;
 }
 
-bool is_integer(const char* buffer, int* dest, int min, int max) {
+bool is_integer(const char *buffer, int* dest, int min, int max) {
     if (buffer == NULL) {
         return false;
     }
 
-    char* endptr;
+    char *endptr;
     errno = 0; // Reset errno before calling strtol
     long result = strtol(buffer, &endptr, 10);
     

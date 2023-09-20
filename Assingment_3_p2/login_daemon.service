@@ -1,0 +1,9 @@
+[Unit]
+Description=Login Daemon
+
+[Service]
+ExecStart=/usr/sbin/login_daemon
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

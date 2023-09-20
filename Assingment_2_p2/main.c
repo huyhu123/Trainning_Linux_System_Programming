@@ -14,6 +14,7 @@ int main()
     printf("Enter text to write to file: ");
     get_input_char(text);
     write_to_file(filename, text);
+    printf("Write '%s' to file '%s' successfully\n", text, filename);
 
     return 0;
 }

@@ -5,4 +5,4 @@ Hard link: point to the the hard drive
 - symbolic file:
  + File_1: hard link: point to a spot on hard drive
  + File_2: soft link: point to file 1 (small, like pointer)
- If file_1 is delete -> file 2 is also gone
+ If file_1 is delete -> file 2 is also gone 

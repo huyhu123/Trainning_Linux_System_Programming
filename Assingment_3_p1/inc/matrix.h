@@ -12,8 +12,8 @@
 
 #include "input.h"
 
-#define MATRIX_ROW_MAX    1000
-#define MATRIX_COLUNM_MAX 1000
+#define MATRIX_ROW_MAX    10000
+#define MATRIX_COLUNM_MAX 10000
 
 typedef struct
 {

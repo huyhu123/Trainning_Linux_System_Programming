@@ -50,14 +50,8 @@ void get_matrix_data(matrix_t *p_matrix)
     }
 }
 
-matrix_t *initialize_matrix()
+matrix_t *create_matrix(int row, int collum)
 {
-    int row = 0;
-    int collum = 0;
-
-    // Get matrix size
-    get_matrix_size(&row, &collum);
-
     matrix_t *return_matrix = malloc(sizeof(matrix_t));
     return_matrix->m_row = row;
     return_matrix->m_column = collum;
@@ -68,8 +62,21 @@ matrix_t *initialize_matrix()
         return_matrix->m_data[i] = (float *)malloc(collum * sizeof(float));
     }
 
-    get_matrix_data(return_matrix);
-    //get_matrix_data_random(return_matrix);
+    return return_matrix;
+}
+
+matrix_t *initialize_matrix()
+{
+    int row = 0;
+    int collum = 0;
+
+    // Get matrix size
+    get_matrix_size(&row, &collum);
+
+    matrix_t *return_matrix = create_matrix(row, collum);
+
+    //get_matrix_data(return_matrix);
+    get_matrix_data_random(return_matrix);
 
     return return_matrix;
 }
@@ -116,14 +123,7 @@ matrix_t *multiply_matrix(matrix_t *p_matrix_a, matrix_t *p_matrix_b)
     }
 
     // Allocate memory for result matrix
-    p_matrix_product = (matrix_t *)malloc(sizeof(matrix_t));
-    p_matrix_product->m_row = p_matrix_a->m_row;
-    p_matrix_product->m_column = p_matrix_b->m_column;
-    p_matrix_product->m_data = (float **)malloc(sizeof(float *) * p_matrix_product->m_row);
-    for (int i = 0; i < p_matrix_product->m_row; i++)
-    {
-        p_matrix_product->m_data[i] = (float *)malloc(sizeof(float) * p_matrix_product->m_column);
-    }     
+    p_matrix_product = create_matrix(p_matrix_a->m_row, p_matrix_a->m_column);
 
     // Calculate product of 2 matrix
     for (int i = 0; i < p_matrix_a->m_row; i++)
@@ -209,14 +209,7 @@ matrix_t *multiply_matrix_multi_thread(matrix_t *matrix_a, matrix_t *matrix_b, i
     }
 
     // Allocate memory for result matrix
-    result = (matrix_t *)malloc(sizeof(matrix_t));
-    result->m_row = matrix_a->m_row;
-    result->m_column = matrix_b->m_column;
-    result->m_data = (float **)malloc(sizeof(float *) * result->m_row);
-    for (int i = 0; i < result->m_row; i++)
-    {
-        result->m_data[i] = (float *)malloc(sizeof(float) * result->m_column);
-    } 
+    result = create_matrix(matrix_a->m_row, matrix_b->m_column);
 
     // Allocate memory for thread arguments
     threads = (pthread_t *)malloc(sizeof(pthread_t) * num_threads);

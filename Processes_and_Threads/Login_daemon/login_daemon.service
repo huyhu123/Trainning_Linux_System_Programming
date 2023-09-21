@@ -4,8 +4,9 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/home/huy/Documents/Trainning_Linux_System_Programming/Processes_and_Threads/Login_daemon/login_daemon
+ExecStart=/usr/sbin/login_daemon
 Restart=always
+RestartSec=10
 
 [Install]
 WantedBy=multi-user.target

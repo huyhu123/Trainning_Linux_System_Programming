@@ -81,6 +81,19 @@ matrix_t *initialize_matrix()
     return return_matrix;
 }
 
+matrix_t *initialize_matrix_rand(int row, int collum)
+{
+    // Get matrix size
+    //get_matrix_size(&row, &collum);
+
+    matrix_t *return_matrix = create_matrix(row, collum);
+
+    //get_matrix_data(return_matrix);
+    get_matrix_data_random(return_matrix);
+
+    return return_matrix;
+}
+
 void print_matrix(matrix_t *p_matrix)
 {
     for (int row = 0; row < p_matrix->m_row; row++)

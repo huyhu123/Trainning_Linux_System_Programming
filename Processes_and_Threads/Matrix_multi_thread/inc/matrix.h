@@ -104,4 +104,6 @@ matrix_t *multiply_matrix_multi_thread(matrix_t *matrix_a, matrix_t *matrix_b, i
 
 bool check_matrix_can_multiply(int matrix_a_col, int matrix_b_row);
 
+matrix_t *initialize_matrix_rand(int row, int collum);
+
 #endif

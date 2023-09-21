@@ -1,0 +1,11 @@
+[Unit]
+Description=Login Daemon
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/home/huy/Documents/Trainning_Linux_System_Programming/Processes_and_Threads/Login_daemon/login_daemon
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

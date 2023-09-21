@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <syslog.h>
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -13,7 +12,6 @@
 
 void sigterm_handler(int signum)
 {
-    syslog(LOG_INFO, "Received SIGTERM signal, exiting...");
     exit(0);
 }
 
@@ -31,9 +29,6 @@ int main(int argc, char *argv[])
     {
         exit(EXIT_SUCCESS);
     }
-
-    // Change the file mode mask
-    umask(0);
 
     // Create a new SID for the child process
     sid = setsid();
@@ -53,8 +48,12 @@ int main(int argc, char *argv[])
     close(STDOUT_FILENO);
     close(STDERR_FILENO);
 
-    // Open the system log
-    openlog("login_daemon", LOG_PID, LOG_USER);
+    // Open the log file for writing
+    int log_fd = open("/var/log/login_daemon.log", O_CREAT | O_WRONLY | O_APPEND, 0644);
+    if (log_fd == -1)
+    {
+        exit(EXIT_FAILURE);
+    }
 
     // Register the SIGTERM signal handler
     signal(SIGTERM, sigterm_handler);
@@ -68,10 +67,13 @@ int main(int argc, char *argv[])
         {
             if (ut->ut_type == USER_PROCESS)
             {
-                struct passwd *pw = getpwuid(ut->ut_user);
+                struct passwd *pw = getpwnam(ut->ut_user);
                 if (pw != NULL)
                 {
-                    syslog(LOG_INFO, "User %s logged in at %s", pw->pw_name, ctime(&ut->ut_tv.tv_sec));
+                    time_t now = time(NULL);
+                    char *timestamp = ctime(&now);
+                    timestamp[strlen(timestamp) - 1] = '\0'; // Remove newline character
+                    dprintf(log_fd, "%s: User %s logged in\n", timestamp, pw->pw_name);
                 }
             }
         }
@@ -79,8 +81,8 @@ int main(int argc, char *argv[])
         sleep(60);
     }
 
-    // Close the system log
-    closelog();
+    // Close the log file
+    close(log_fd);
 
     // Exit the child process
     exit(EXIT_SUCCESS);

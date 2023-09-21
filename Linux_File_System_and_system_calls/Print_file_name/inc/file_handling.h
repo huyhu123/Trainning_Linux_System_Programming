@@ -108,12 +108,52 @@ void create_new_file_name(char *new_file_name, char *file_name, char *output_nam
  */
 void list_file_in_dir(char *dir);
 
+/**
+ * @brief Searches for a file with the given name in the specified directory.
+ *
+ * This function searches for a file with the given name in the specified directory.
+ * If the file is found, the function returns true. Otherwise, it returns false.
+ *
+ * @param dir The directory to search in.
+ * @param name The name of the file to search for.
+ * @return true if the file is found, false otherwise.
+ */
 bool search_file_in_dir(char *dir, char *name);
 
+/**
+ * @brief Prompts the user to enter a name for the output file and reads it from the standard input stream.
+ *
+ * This function prompts the user to enter a name for the output file and reads it from the standard input
+ * stream. The file name is stored in the provided buffer. If the user enters a valid file name, the function
+ * returns true. If the user enters an empty string or encounters an error, the function returns false.
+ *
+ * @param file_name A pointer to a character buffer where the file name will be stored.
+ * @return true if a valid file name was entered, false otherwise.
+ */
 bool get_output_name(char *file_name);
 
+/**
+ * @brief Creates a hard link between the source file and the destination file.
+ *
+ * This function creates a hard link between the source file and the destination file.
+ * If the operation is successful, the function returns true. Otherwise, it returns false.
+ *
+ * @param dest_file The name of the destination file.
+ * @param src_file The name of the source file.
+ * @return true if the operation is successful, false otherwise.
+ */
 void create_hard_link(char *dest_file, char *src_file);
 
+/**
+ * @brief Creates a soft link between the source file and the destination file.
+ *
+ * This function creates a soft link between the source file and the destination file.
+ * If the operation is successful, the function returns true. Otherwise, it returns false.
+ *
+ * @param dest_file The name of the destination file.
+ * @param src_file The name of the source file.
+ * @return true if the operation is successful, false otherwise.
+ */
 void create_soft_link(char *dest_file, char *src_file);
 
 #endif

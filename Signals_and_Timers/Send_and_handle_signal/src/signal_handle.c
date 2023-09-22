@@ -2,5 +2,5 @@
 
 void handle_signal(int sig)
 {
-    printf("\nReceived signal %d\n", sig);
+    printf("\nReceived signal %d", sig);
 }

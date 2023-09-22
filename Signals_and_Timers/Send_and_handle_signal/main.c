@@ -3,12 +3,10 @@
 int main()
 {
     // Set up signal handler
-    signal(SIGINT, handle_signal);
-    signal(SIGTERM, handle_signal);
-    signal(SIGQUIT, handle_signal);
     signal(SIGALRM, handle_signal);
 
     // Wait for signals
+    printf("Send SIGALRM (14) signal after 5 seconds\n");
     while (1)
     {
         // Send SIGALRM signal after 5 seconds

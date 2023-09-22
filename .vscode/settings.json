@@ -5,6 +5,7 @@
         "compare": "c",
         "type_traits": "c",
         "unistd.h": "c",
-        "cstdlib": "c"
+        "cstdlib": "c",
+        "input.h": "c"
     }
 }

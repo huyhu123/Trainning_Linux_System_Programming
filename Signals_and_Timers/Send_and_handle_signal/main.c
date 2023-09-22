@@ -1,22 +1,19 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <signal.h>
-#include <unistd.h>
+#include "signal_handle.h"
 
-void handle_signal(int sig) {
-    printf("\nReceived signal %d\n", sig);
-}
-
-int main() {
+int main()
+{
     // Set up signal handler
     signal(SIGINT, handle_signal);
-
-    // Send SIGALRM signal after 5 seconds
-    alarm(5);
+    signal(SIGTERM, handle_signal);
+    signal(SIGQUIT, handle_signal);
+    signal(SIGALRM, handle_signal);
 
     // Wait for signals
-    while (1) {
-        sleep(1);
+    while (1)
+    {
+        // Send SIGALRM signal after 5 seconds
+        kill(getpid(), SIGALRM);
+        sleep(5);
     }
 
     return 0;

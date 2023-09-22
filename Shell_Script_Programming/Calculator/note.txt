@@ -108,7 +108,6 @@ External Programs ( tr, grep, expr and cut, ...)
     The backtick (`) indicate that the enclosed text is to be executed as a command. 
         MYNAME=`grep "^${USER}:" /etc/passwd | cut -d: -f5`
             (use to grab output into a variable)
-
 -------
 Functions:
     add_a_user()

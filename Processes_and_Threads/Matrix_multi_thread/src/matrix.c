@@ -264,5 +264,8 @@ matrix_t *multiply_matrix_multi_thread(matrix_t *matrix_a, matrix_t *matrix_b, i
     free(threads);
     free(thread_args);
 
+    threads = NULL;
+    thread_args = NULL;
+
     return result;
 }

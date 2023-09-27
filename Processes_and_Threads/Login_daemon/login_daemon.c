@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
         sleep(60);
     }
 
-    // Close the log file
+    // Close the log file 
     close(log_fd);
 
     // Exit the child process

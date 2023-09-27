@@ -6,6 +6,7 @@
         "type_traits": "c",
         "unistd.h": "c",
         "cstdlib": "c",
-        "input.h": "c"
+        "input.h": "c",
+        "dynamic_memory_allocation.h": "c"
     }
 }

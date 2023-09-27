@@ -18,7 +18,7 @@ int main() {
         exit(1);
     }
 
-    printf("Acquired exclusive lock on file\n");
+    printf("Process %i: Acquired exclusive lock on file\n", getpid());
 
     // Hold lock for 10 seconds
     sleep(10);
@@ -29,7 +29,7 @@ int main() {
         exit(1);
     }
 
-    printf("Released lock on file\n");
+    printf("Process %i: Released lock on file\n", getpid());
 
     close(fd);
     return 0;

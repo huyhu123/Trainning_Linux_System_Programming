@@ -17,7 +17,8 @@ void sigterm_handler(int signum)
 
 int main(int argc, char *argv[])
 {
-    pid_t pid, sid;
+    pid_t pid = 0; 
+    pid_t sid = 0;
 
     // Fork off the parent process
     pid = fork();

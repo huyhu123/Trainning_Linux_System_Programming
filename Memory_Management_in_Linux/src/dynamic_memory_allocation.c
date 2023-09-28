@@ -133,7 +133,14 @@ void *my_realloc(void *ptr, size_t size)
         }
 
         // Copy the content of the old block to the new block
-        copy_size = block->size < size ? block->size : size;
+        if (block->size < size)
+        {
+            copy_size = block->size;
+        }
+        else
+        {
+            copy_size = size;
+        }
         memcpy(new_ptr, ptr, copy_size);
 
         my_free(ptr); // Free the old block

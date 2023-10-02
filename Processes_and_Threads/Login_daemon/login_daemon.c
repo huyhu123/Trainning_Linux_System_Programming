@@ -30,7 +30,6 @@ int main(int argc, char *argv[])
     {
         exit(EXIT_SUCCESS);
     }
-
     // Create a new SID for the child process
     sid = setsid();
     if (sid < 0)

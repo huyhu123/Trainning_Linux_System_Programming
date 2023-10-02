@@ -7,6 +7,17 @@
         "unistd.h": "c",
         "cstdlib": "c",
         "input.h": "c",
-        "dynamic_memory_allocation.h": "c"
+        "dynamic_memory_allocation.h": "c",
+        "semaphore.h": "c",
+        "semaphore_multithread.h": "c",
+        "stdio.h": "c",
+        "chrono": "c",
+        "random": "c",
+        "limits": "c",
+        "signal_handle.h": "c",
+        "ratio": "c",
+        "signal_synchronize.h": "c",
+        "semaphore_synchronize.h": "c",
+        "mutex_synchronize.h": "c"
     }
 }

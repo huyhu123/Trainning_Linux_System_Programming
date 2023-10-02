@@ -3,6 +3,7 @@
 int main()
 {
     pthread_t threads[NUM_THREADS] = {0};
+    int thread_ids[NUM_THREADS] = {0};
 
     // Initialize semaphore
     init_semaphore();
@@ -10,7 +11,8 @@ int main()
     // Create thread
     for (int i = 0; i < NUM_THREADS; i++)
     {
-        if (pthread_create(&threads[i], NULL, thread_function, NULL) != 0)
+        thread_ids[i] = i;
+        if (pthread_create(&threads[i], NULL, thread_function, &thread_ids[i]) != 0)
         {
             perror("Error creating thread");
             exit(EXIT_FAILURE);

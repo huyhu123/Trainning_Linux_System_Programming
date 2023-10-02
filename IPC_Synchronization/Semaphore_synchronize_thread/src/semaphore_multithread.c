@@ -37,7 +37,7 @@ void *thread_function(void *arg)
     char filename[FILE_NAME_LENGTH] = {0};
     int rand = 0;
     int val = 0;
-    int *thread_id = (int *)arg;
+    int thread_id = *(int *)arg;
 
     for (int i = 0; i < 10; i++)
     {
@@ -58,7 +58,7 @@ void *thread_function(void *arg)
             common_variable++;
 
             // Write value to output file and sleep for 1-3s
-            printf("Thread id %li: Write value %i to file %s\n", pthread_self(), common_variable, filename);
+            printf("Thread id %i: Write value %i to file %s\n", thread_id, common_variable, filename);
             write_to_file(filename, common_variable);
             sleep(random_int(1, 3));
 
@@ -73,7 +73,7 @@ void *thread_function(void *arg)
             common_variable++;
 
             // Write value to output file and sleep for 1-3s
-            printf("Thread id %li: Write value %i to file %s\n", pthread_self(), common_variable, filename);
+            printf("Thread id %i: Write value %i to file %s\n", thread_id, common_variable, filename);
             write_to_file(filename, common_variable);
             sleep(random_int(1, 3));
 

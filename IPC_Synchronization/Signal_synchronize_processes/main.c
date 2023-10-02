@@ -22,7 +22,8 @@ void process_B()
     signal(SIGUSR1, signal_handler);
     while (1)
     {
-        sleep(1);
+        pause();
+        
         fseek(output_file, 0, SEEK_SET);
         fscanf(output_file, "%d", &counter);
         counter++;
@@ -30,7 +31,7 @@ void process_B()
         fflush(output_file);
 
         kill(getppid(), SIGUSR1);
-        pause();
+        
     }
 }
 

@@ -18,6 +18,7 @@
         "ratio": "c",
         "signal_synchronize.h": "c",
         "semaphore_synchronize.h": "c",
-        "mutex_synchronize.h": "c"
+        "mutex_synchronize.h": "c",
+        "string.h": "c"
     }
 }

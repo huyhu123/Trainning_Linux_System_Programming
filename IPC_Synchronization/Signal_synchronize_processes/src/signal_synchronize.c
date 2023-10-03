@@ -79,7 +79,7 @@ void process_a()
     FILE *fp = NULL;
 
     // Create file output if not exist
-    fp = fp = fopen(OUTPUT_FILE, "a");
+    fp = fopen(OUTPUT_FILE, "a");
     if (fp == NULL)
     {
         printf("Error creating file\n");
@@ -123,4 +123,7 @@ void process_a()
             pause();
         }
     }
+
+    // Wait for process B
+    wait(NULL);
 }

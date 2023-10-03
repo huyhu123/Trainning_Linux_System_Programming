@@ -26,6 +26,7 @@ int get_last_line_number(const char *filename)
     FILE *fp = NULL;
     char line[LINE_LENGTH] = {0};
     int last_line_number = 0;
+    int line_number;
 
     // Open file
     fp = fopen(filename, "r");
@@ -38,7 +39,6 @@ int get_last_line_number(const char *filename)
     // Get last line number
     while (fgets(line, sizeof(line), fp) != NULL)
     {
-        int line_number;
         if (sscanf(line, "Process %*d: %d", &line_number) == 1)
         {
             last_line_number = line_number;
@@ -75,16 +75,19 @@ void process_b()
 
 void process_a()
 {
+    pid_t pid_B;
+    FILE *fp = NULL;
+
     // Create file output if not exist
-    FILE *fp = fp = fopen(OUTPUT_FILE, "a");
+    fp = fp = fopen(OUTPUT_FILE, "a");
     if (fp == NULL)
     {
         printf("Error creating file\n");
         exit(1);
     }
     fclose(fp);
+
     // Create process B
-    pid_t pid_B;
     pid_B = fork();
     if (pid_B < 0)
     {

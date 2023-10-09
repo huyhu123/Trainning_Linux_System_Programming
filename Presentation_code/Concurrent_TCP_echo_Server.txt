@@ -1,0 +1,23 @@
+## Server Program
+
+1. The server creates a TCP socket using the `socket()` system call. This creates a new socket descriptor that can be used to send and receive data over the network.
+
+2. The server binds the socket to a specific IP address and port number using the `bind()` system call. This tells the operating system to route incoming network traffic to the socket.
+
+3. The server listens for incoming connections using the `listen()` system call. This puts the socket in a passive mode where it can accept incoming connections from clients.
+
+4. The server enters an infinite loop to accept incoming connections and handle client requests. For each iteration of the loop, the server calls the `accept()` system call to accept a new client connection. This returns a new socket descriptor that can be used to communicate with the client.
+
+5. The server enters another loop to receive data from the client and echo it back. For each iteration of the loop, the server calls the `recv()` system call to receive data from the client. This blocks until data is received. Once data is received, the server calls the `send()` system call to send the data back to the client.
+
+6. When the client closes the connection, the server closes the socket descriptor for that client and goes back to waiting for new connections.
+
+## Client Program
+
+1. The client creates a TCP socket using the `socket()` system call. This creates a new socket descriptor that can be used to send and receive data over the network.
+
+2. The client connects to the server using the `connect()` system call. This establishes a connection to the server using the server's IP address and port number.
+
+3. The client enters an infinite loop to send data to the server and receive the echoed data. For each iteration of the loop, the client prompts the user to enter a message, sends the message to the server using the `send()` system call, receives the echoed message from the server using the `recv()` system call, and prints the echoed message to the console.
+
+4. When the client is finished, it closes the client socket using the `close()` system call.

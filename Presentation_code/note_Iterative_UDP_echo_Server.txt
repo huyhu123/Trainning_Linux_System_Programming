@@ -1,0 +1,23 @@
+## UDP Echo Server
+
+1. The server creates a UDP socket using the `socket()` system call. The `socket()` function takes three arguments: the address family (in this case, `AF_INET` for IPv4), the socket type (in this case, `SOCK_DGRAM` for UDP), and the protocol (in this case, `IPPROTO_UDP` for UDP).
+
+2. The server binds the socket to a specific IP address and port using the `bind()` system call. In this example, the server binds to all available network interfaces using the `INADDR_ANY` constant and port 5000.
+
+3. The server enters an infinite loop to receive and process incoming messages from clients. In each iteration of the loop, the server waits for a message to arrive using the `recvfrom()` system call. The `recvfrom()` function takes five arguments: the socket file descriptor, a buffer to store the incoming message, the maximum size of the buffer, flags (in this case, 0), and a pointer to a `sockaddr` structure that will be filled in with the address of the client that sent the message.
+
+4. Once the server receives a message, it sends the same message back to the client using the `sendto()` system call. The `sendto()` function takes six arguments: the socket file descriptor, the message to send, the length of the message, flags (in this case, 0), a pointer to a `sockaddr` structure that contains the address of the client to send the message to, and the size of the `sockaddr` structure.
+
+5. The server then goes back to waiting for the next message to arrive.
+
+## UDP Echo Client
+
+1. The client creates a UDP socket using the `socket()` system call, just like the server.
+
+2. The client sets the address and port of the server it wants to communicate with using a `sockaddr_in` structure. In this example, the server IP address is set to 127.0.0.1 (localhost) and the port is set to 5000.
+
+3. The client enters an infinite loop to send messages to the server and receive responses. In each iteration of the loop, the client prompts the user to enter a message using `fgets()`, sends the message to the server using the `sendto()` system call, and waits for a response using the `recvfrom()` system call.
+
+4. Once the client receives a response from the server, it prints the response to the console.
+
+5. The client then goes back to prompting the user for the next message to send.

@@ -9,7 +9,7 @@
 #include <sys/types.h>
 #include <pthread.h>
 
-#define MAX_CLIENTS 10
+#define MAX_CLIENTS 5
 #define BUFFER      1024
 
 void reverse_string(char *str)
@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
     // Binding Socket to address
     bind(listenfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
 
-    // Listening for Incoming Connection
+    // Listening for incoming connection
     listen(listenfd, MAX_CLIENTS);
 
     while (1)

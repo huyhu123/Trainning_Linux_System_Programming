@@ -1,71 +1,11 @@
-/*Author: Kyo*/
-#include <stdio.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <stdlib.h>
-#include <netdb.h>
-#include <string.h>
-#include <math.h>
-#include <pthread.h>
-#include <signal.h>
-#include <sys/time.h>
-#include <unistd.h>
-#include <openssl/ssl.h>
-#include <openssl/rsa.h>
-#include <openssl/x509.h>
-#include <openssl/evp.h>
-
-#define SPEEDTEST_DOMAIN_NAME "www.speedtest.net"
-#define CONFIG_REQUEST_URL "speedtest-config.php"
-
-#define SPEEDTEST_SERVERS_DOMAIN_NAME "c.speedtest.net"
-#define SERVERS_LOCATION_REQUEST_URL "speedtest-servers-static.php?"
-
-#define FILE_DIRECTORY_PATH "/tmp/"
-#define NEAREST_SERVERS_NUM 3
-#define THREAD_NUMBER 4
-#define SPEEDTEST_DURATION 5
-
-#define UL_BUFFER_SIZE 8192
-#define UL_BUFFER_TIMES 10240
-#define DL_BUFFER_SIZE 8192
+#include "speed_test.h"
 
 float start_dl_time, stop_dl_time, start_ul_time, stop_ul_time;
 int thread_all_stop = 0;
 long int total_dl_size = 0, total_ul_size = 0;
+bool error = false;
 
 static pthread_mutex_t pthread_mutex = PTHREAD_MUTEX_INITIALIZER;
-
-typedef struct client_data
-{
-    char ipAddr[128];
-    double latitude;
-    double longitude;
-    char isp[128];
-} client_data_t;
-
-typedef struct server_data
-{
-    char url[128];
-    double latitude;
-    double longitude;
-    char name[128];
-    char country[128];
-    double distance;
-    int latency;
-    char domain_name[128];
-    struct sockaddr_in servinfo;
-} server_data_t;
-
-typedef struct thread
-{
-    int thread_index;
-    int running;
-    pthread_t tid;
-    char domain_name[128];
-    char request_url[128];
-    struct sockaddr_in servinfo;
-} thread_t;
 
 thread_t thread[THREAD_NUMBER];
 
@@ -444,6 +384,29 @@ int get_nearest_server(double lat_c, double lon_c, server_data_t *nearest_server
         return 0;
 }
 
+int compare_latency(const void *a, const void *b)
+{
+    const server_data_t *server_a = (const server_data_t *)a;
+    const server_data_t *server_b = (const server_data_t *)b;
+
+    if (server_a->latency == -1 && server_b->latency == -1)
+    {
+        return 0;
+    }
+    else if (server_a->latency == -1)
+    {
+        return 1;
+    }
+    else if (server_b->latency == -1)
+    {
+        return -1;
+    }
+    else
+    {
+        return server_a->latency - server_b->latency;
+    }
+}
+
 int get_best_server(server_data_t *nearest_servers)
 {
     FILE *fp = NULL;
@@ -525,23 +488,19 @@ int get_best_server(server_data_t *nearest_servers)
         }
     }
 
+    // Sort servers by latency
+    qsort(nearest_servers, NEAREST_SERVERS_NUM, sizeof(server_data_t), compare_latency);
+
     // Select low latency server
     for (i = 0; i < NEAREST_SERVERS_NUM; i++)
     {
-        if (i == 0)
+        if (nearest_servers[i].latency != -1)
         {
             best_index = i;
-            latency = nearest_servers[i].latency;
-        }
-        else
-        {
-            if (nearest_servers[i].latency < latency && nearest_servers[i].latency != -1)
-            {
-                best_index = i;
-                latency = nearest_servers[i].latency;
-            }
+            break;
         }
     }
+
     return best_index;
 }
 
@@ -695,6 +654,7 @@ void *download_thread(void *arg)
 err:
     if (fd)
         close(fd);
+    thread_all_stop = 1;
     thread[i].running = 0;
     return NULL;
 }
@@ -844,6 +804,7 @@ void *upload_thread(void *arg)
 err:
     if (fd)
         close(fd);
+    thread_all_stop = 1;
     thread[i].running = 0;
     return NULL;
 }
@@ -902,7 +863,7 @@ void print_nearest_servers_table(server_data_t *nearest_servers)
     printf("=========================================================\n");
 }
 
-int main(int argc, char* argv[])
+void run()
 {
     int i, best_server_index;
     client_data_t client_data;
@@ -922,7 +883,7 @@ int main(int argc, char* argv[])
         if (!get_https_file(&servinfo, SPEEDTEST_DOMAIN_NAME, CONFIG_REQUEST_URL, CONFIG_REQUEST_URL))
         {
             printf("Can't get your IP address information.\n");
-            return 0;
+            return;
         }
     }
 
@@ -931,7 +892,7 @@ int main(int argc, char* argv[])
         if (!get_https_file(&servinfo, SPEEDTEST_SERVERS_DOMAIN_NAME, SERVERS_LOCATION_REQUEST_URL, SERVERS_LOCATION_REQUEST_URL))
         {
             printf("Can't get servers list.\n");
-            return 0;
+            return;
         }
     }
 
@@ -945,7 +906,7 @@ int main(int argc, char* argv[])
     if (get_nearest_server(client_data.latitude, client_data.longitude, nearest_servers) == 0)
     {
         printf("Can't get server list.\n");
-        return 0;
+        return;
     }
     if ((best_server_index = get_best_server(nearest_servers)) != -1)
     {
@@ -971,5 +932,4 @@ int main(int argc, char* argv[])
         speedtest_upload(&nearest_servers[best_server_index]);
         printf("\n");
     }
-    return 0;
 }

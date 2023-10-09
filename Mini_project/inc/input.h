@@ -37,4 +37,6 @@ void get_input_float(float *value, float min, float max);
  */
 void get_input_int(int *value, int min, int max);
 
+bool is_integer(const char *buffer, int *dest, int min, int max);
+
 #endif

@@ -26,8 +26,8 @@
 
 #define FILE_DIRECTORY_PATH "/tmp/"
 #define NEAREST_SERVERS_NUM 4
-#define THREAD_NUMBER 4
-#define SPEEDTEST_DURATION 5
+#define MAX_THREAD_NUMBER 10
+#define SPEEDTEST_DURATION 4
 
 #define UL_BUFFER_SIZE 8192
 #define UL_BUFFER_TIMES 10240
@@ -64,7 +64,6 @@ typedef struct thread
     struct sockaddr_in servinfo;
 } thread_t;
 
-void run();
-
+void run(int thread_num, int protocol, bool auto_pick_server);
 
 #endif

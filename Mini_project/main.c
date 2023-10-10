@@ -15,11 +15,6 @@ int main(int argc, char* argv[])
     // Check input
     while (count < argc)
     {
-        //token = strtok(argv[count], "=");
-        //printf("1. %s\n", token);
-        //token = strtok(NULL, "=");
-        //printf("2. %s\n", token);
-
         if (strcmp(argv[count], "--help") == 0)
         {
             printf("Usage: \n");
@@ -33,6 +28,7 @@ int main(int argc, char* argv[])
         if (strcmp(argv[count], "-m") == 0)
         {
             auto_pick_server = false;
+            count++;
             continue;
         }
 

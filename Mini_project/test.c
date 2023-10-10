@@ -1,5 +1,66 @@
-#include "speed_test.h"
-#include "input.h"
+#include <stdio.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <stdlib.h>
+#include <netdb.h>
+#include <string.h>
+#include <math.h>
+#include <pthread.h>
+#include <signal.h>
+#include <sys/time.h>
+#include <unistd.h>
+#include <stdbool.h>
+#include <openssl/ssl.h>
+#include <openssl/rsa.h>
+#include <openssl/x509.h>
+#include <openssl/evp.h>
+
+#define SPEEDTEST_DOMAIN_NAME "www.speedtest.net"
+#define CONFIG_REQUEST_URL "speedtest-config.php"
+
+#define SPEEDTEST_SERVERS_DOMAIN_NAME "c.speedtest.net"
+#define SERVERS_LOCATION_REQUEST_URL "speedtest-servers-static.php?"
+#define TIME_OUT 5
+
+#define FILE_DIRECTORY_PATH "/tmp/"
+#define NEAREST_SERVERS_NUM 4
+#define MAX_THREAD_NUMBER 10
+#define SPEEDTEST_DURATION 4
+
+#define UL_BUFFER_SIZE 8192
+#define UL_BUFFER_TIMES 10240
+#define DL_BUFFER_SIZE 8192
+
+typedef struct client_data
+{
+    char ipAddr[128];
+    double latitude;
+    double longitude;
+    char isp[128];
+} client_data_t;
+
+typedef struct server_data
+{
+    char url[128];
+    double latitude;
+    double longitude;
+    char name[128];
+    char country[128];
+    double distance;
+    int latency;
+    char domain_name[128];
+    struct sockaddr_in servinfo;
+} server_data_t;
+
+typedef struct thread
+{
+    int thread_index;
+    int running;
+    pthread_t tid;
+    char domain_name[128];
+    char request_url[128];
+    struct sockaddr_in servinfo;
+} thread_t;
 
 float start_dl_time, stop_dl_time, start_ul_time, stop_ul_time;
 int thread_all_stop = 0;
@@ -35,45 +96,6 @@ int get_ipv4_addr(char *domain_name, struct sockaddr_in *servinfo)
             memcpy(servinfo, (struct sockaddr_in *)p->ai_addr, sizeof(struct sockaddr_in));
         }
     }
-    freeaddrinfo(addrinfo);
-    return 1;
-}
-
-// Setting the port to 443 for HTTPS connections.
-int get_ipv4_addr_https(char *domain_name, struct sockaddr_in *servinfo)
-{
-    struct addrinfo hints, *addrinfo, *p;
-    int status;
-
-    memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_STREAM;
-
-    char *token = strtok(domain_name, ":");
-
-    if ((status = getaddrinfo(token, "https", &hints, &addrinfo)) != 0)
-    {
-        printf("Resolve DNS Failed: Can't get ip address! (%s)\n", token);
-        return 0;
-    }
-
-    for (p = addrinfo; p != NULL; p = p->ai_next)
-    {
-        if (p->ai_family == AF_INET)
-        {
-            memcpy(servinfo, (struct sockaddr_in *)p->ai_addr, sizeof(struct sockaddr_in));
-            servinfo->sin_port = htons(443); // Set the port to 443 for HTTPS
-            break;
-        }
-    }
-
-    if (p == NULL)
-    {
-        printf("Can't get IPv4 address for %s\n", domain_name);
-        freeaddrinfo(addrinfo);
-        return 0;
-    }
-
     freeaddrinfo(addrinfo);
     return 1;
 }
@@ -165,120 +187,6 @@ int get_http_file(struct sockaddr_in *serv, char *domain_name, char *request_url
     return 1;
 }
 
-int get_https_file(struct sockaddr_in *serv, char *domain_name, char *request_url, char *filename)
-{
-    int fd;
-    char sbuf[256] = {0}, tmp_path[128] = {0};
-    char rbuf[8192];
-    struct timeval tv;
-    fd_set fdSet;
-    FILE *fp = NULL;
-
-    SSL_CTX *ctx;
-    SSL *ssl;
-
-    SSL_library_init();
-    ctx = SSL_CTX_new(TLS_client_method());
-    if (!ctx)
-    {
-        perror("SSL_CTX_new error!\n");
-        return 0;
-    }
-
-    if ((fd = socket(serv->sin_family, SOCK_STREAM, 0)) == -1)
-    {
-        perror("Open socket error!\n");
-        if (fd)
-            close(fd);
-        return 0;
-    }
-
-    if (connect(fd, (struct sockaddr *)serv, sizeof(struct sockaddr)) == -1)
-    {
-        perror("Socket connect error!\n");
-        if (fd)
-            close(fd);
-        return 0;
-    }
-
-    ssl = SSL_new(ctx);
-    SSL_set_fd(ssl, fd);
-    if (SSL_connect(ssl) == -1)
-    {
-        perror("SSL_connect error!\n");
-        SSL_free(ssl);
-        SSL_CTX_free(ctx);
-        close(fd);
-        return 0;
-    }
-
-    sprintf(sbuf,
-            "GET /%s HTTP/1.1\r\n"
-            "Host: %s\r\n"
-            "User-Agent: status\r\n"
-            "Accept: */*\r\n"
-            "Connection: close\r\n\r\n",
-            request_url, domain_name);
-
-    if (SSL_write(ssl, sbuf, strlen(sbuf)) != strlen(sbuf))
-    {
-        perror("Can't send data to server\n");
-        SSL_free(ssl);
-        SSL_CTX_free(ctx);
-        close(fd);
-        return 0;
-    }
-
-    sprintf(tmp_path, "%s%s", FILE_DIRECTORY_PATH, filename);
-    fp = fopen(tmp_path, "w+");
-
-    while (1)
-    {
-        char *ptr = NULL;
-        memset(rbuf, 0, sizeof(rbuf));
-        FD_ZERO(&fdSet);
-        FD_SET(fd, &fdSet);
-
-        tv.tv_sec = 3;
-        tv.tv_usec = 0;
-        int status = select(fd + 1, &fdSet, NULL, NULL, &tv);
-        int i = SSL_read(ssl, rbuf, sizeof(rbuf));
-        if (status > 0 && FD_ISSET(fd, &fdSet))
-        {
-            if (i < 0)
-            {
-                printf("Can't get https file!\n");
-                SSL_free(ssl);
-                SSL_CTX_free(ctx);
-                close(fd);
-                fclose(fp);
-                return 0;
-            }
-            else if (i == 0)
-            {
-                break;
-            }
-            else
-            {
-                if ((ptr = strstr(rbuf, "\r\n\r\n")) != NULL)
-                {
-                    ptr += 4;
-                    fwrite(ptr, 1, strlen(ptr), fp);
-                }
-                else
-                {
-                    fwrite(rbuf, 1, i, fp);
-                }
-            }
-        }
-    }
-
-    SSL_free(ssl);
-    SSL_CTX_free(ctx);
-    close(fd);
-    fclose(fp);
-    return 1;
-}
 
 int get_ip_address_position(char *fileName, client_data_t *client_data)
 {
@@ -742,7 +650,6 @@ int speedtest_download(server_data_t *nearest_server)
     {
         end = clock();
         cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
-        // printf("%f\n", cpu_time_used);
         if (cpu_time_used > SPEEDTEST_DURATION)
         {
             thread_all_stop = 1;
@@ -848,7 +755,6 @@ void *upload_thread(void *arg)
 err:
     if (fd)
         close(fd);
-    // thread_all_stop = 1;
     thread[i].running = 0;
     return NULL;
 }
@@ -891,25 +797,6 @@ int speedtest_upload(server_data_t *nearest_server)
     return 1;
 }
 
-void print_nearest_servers_table(server_data_t *nearest_servers)
-{
-    printf("===================================================================================================================================================================\n");
-    printf("%-5s %-70s %-15s %-15s %-15s %-15s %-15s %-15s\n", "ID", "URL", "Latitude", "Longitude", "Name", "Country", "Distance", "Latency");
-    printf("-------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
-    for (int i = 0; i < NEAREST_SERVERS_NUM; i++)
-    {
-        printf("%-5i %-70s %-15.2f %-15.2f %-15s %-15s %-15.2f %-15i\n", i,
-               nearest_servers[i].url,
-               nearest_servers[i].latitude,
-               nearest_servers[i].longitude,
-               nearest_servers[i].name,
-               nearest_servers[i].country,
-               nearest_servers[i].distance,
-               nearest_servers[i].latency);
-    }
-    printf("===================================================================================================================================================================\n");
-}
-
 void run(int thread_num, int protocol, bool auto_pick_server)
 {
     int i, best_server_index;
@@ -928,52 +815,25 @@ void run(int thread_num, int protocol, bool auto_pick_server)
         memset(&nearest_servers[i], 0, sizeof(server_data_t));
     }
 
-    // Choose http or ttps protocol
-    switch (protocol)
+
+    if (get_ipv4_addr(SPEEDTEST_DOMAIN_NAME, &servinfo))
     {
-    case 1:
-        // http
-        if (get_ipv4_addr(SPEEDTEST_DOMAIN_NAME, &servinfo))
+        if (!get_http_file(&servinfo, SPEEDTEST_DOMAIN_NAME, CONFIG_REQUEST_URL, CONFIG_REQUEST_URL))
         {
-            if (!get_http_file(&servinfo, SPEEDTEST_DOMAIN_NAME, CONFIG_REQUEST_URL, CONFIG_REQUEST_URL))
-            {
-                printf("Can't get your IP address information.\n");
-                return;
-            }
+            printf("Can't get your IP address information.\n");
+            return;
         }
-
-        if (get_ipv4_addr(SPEEDTEST_SERVERS_DOMAIN_NAME, &servinfo))
-        {
-            if (!get_http_file(&servinfo, SPEEDTEST_SERVERS_DOMAIN_NAME, SERVERS_LOCATION_REQUEST_URL, SERVERS_LOCATION_REQUEST_URL))
-            {
-                printf("Can't get servers list.\n");
-                return;
-            }
-        }
-        break;
-    case 2:
-        // https
-        if (get_ipv4_addr_https(SPEEDTEST_DOMAIN_NAME, &servinfo))
-        {
-            if (!get_https_file(&servinfo, SPEEDTEST_DOMAIN_NAME, CONFIG_REQUEST_URL, CONFIG_REQUEST_URL))
-            {
-                printf("Can't get your IP address information.\n");
-                return;
-            }
-        }
-
-        if (get_ipv4_addr_https(SPEEDTEST_SERVERS_DOMAIN_NAME, &servinfo))
-        {
-            if (!get_https_file(&servinfo, SPEEDTEST_SERVERS_DOMAIN_NAME, SERVERS_LOCATION_REQUEST_URL, SERVERS_LOCATION_REQUEST_URL))
-            {
-                printf("Can't get servers list.\n");
-                return;
-            }
-        }
-        break;
-    default:
-        return;
     }
+
+    if (get_ipv4_addr(SPEEDTEST_SERVERS_DOMAIN_NAME, &servinfo))
+    {
+        if (!get_http_file(&servinfo, SPEEDTEST_SERVERS_DOMAIN_NAME, SERVERS_LOCATION_REQUEST_URL, SERVERS_LOCATION_REQUEST_URL))
+        {
+            printf("Can't get servers list.\n");
+            return;
+        }
+    }
+
 
     get_ip_address_position(CONFIG_REQUEST_URL, &client_data);
     printf("============================================\n");
@@ -988,57 +848,27 @@ void run(int thread_num, int protocol, bool auto_pick_server)
         return;
     }
 
-    if ((best_server_index = get_best_server(nearest_servers, protocol)) != -1)
-    {        
-        print_nearest_servers_table(nearest_servers);
 
-        // Choose server manually
-        if (!auto_pick_server)
+    count = 0;
+    while (check_server(nearest_servers[count]) == 1)
+    {
+        count++;
+        if (count >= NEAREST_SERVERS_NUM)
         {
-            printf("Choose server to test: ");
-            get_input_int(&choose, 0, thread_number);
-
-            if (check_server(nearest_servers[choose]) == 1)
-            {
-                printf("Server not available\n");
-                return;
-            }
-
-            pthread_create(&pid, NULL, calculate_dl_speed_thread, NULL);
-            speedtest_download(&nearest_servers[choose]);
-
-            sleep(2);
-            printf("\n");
-            thread_all_stop = 0;
-
-            pthread_create(&pid, NULL, calculate_ul_speed_thread, NULL);
-            speedtest_upload(&nearest_servers[choose]);
-            printf("\n");
-        }
-        else // Auto choose best server
-        {
-            // Check if can connect to server
-            count = 0;
-            while (check_server(nearest_servers[count]) == 1)
-            {
-                count++;
-                if (count >= NEAREST_SERVERS_NUM)
-                {
-                    printf("No server available\n");
-                    return;
-                }
-            }
-
-            pthread_create(&pid, NULL, calculate_dl_speed_thread, NULL);
-            speedtest_download(&nearest_servers[count]);
-
-            sleep(2);
-            printf("\n");
-            thread_all_stop = 0;
-
-            pthread_create(&pid, NULL, calculate_ul_speed_thread, NULL);
-            speedtest_upload(&nearest_servers[count]);
-            printf("\n");
+            printf("No server available\n");
+            return;
         }
     }
+
+    pthread_create(&pid, NULL, calculate_dl_speed_thread, NULL);
+    speedtest_download(&nearest_servers[count]);
+
+    sleep(2);
+    printf("\n");
+    thread_all_stop = 0;
+
+    pthread_create(&pid, NULL, calculate_ul_speed_thread, NULL);
+    speedtest_upload(&nearest_servers[count]);
+    printf("\n");
+
 }

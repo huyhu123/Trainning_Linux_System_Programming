@@ -23,6 +23,7 @@
 
 #define SPEEDTEST_SERVERS_DOMAIN_NAME "c.speedtest.net"
 #define SERVERS_LOCATION_REQUEST_URL "speedtest-servers-static.php?"
+#define TIME_OUT 5
 
 #define FILE_DIRECTORY_PATH "/tmp/"
 #define NEAREST_SERVERS_NUM 4

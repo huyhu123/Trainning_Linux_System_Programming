@@ -4,7 +4,6 @@
 #include "speed_test_download_upload.h"
 #include "input.h"
 
-
 void print_nearest_servers_table(server_data_t *nearest_servers)
 {
     printf("===================================================================================================================================================================\n");
@@ -41,7 +40,7 @@ void run(int thread_num, int protocol, bool auto_pick_server)
         memset(&nearest_servers[i], 0, sizeof(server_data_t));
     }
 
-    // Choose http or ttps protocol
+    // Choose http or https protocol
     switch (protocol)
     {
     case 1:
@@ -101,7 +100,7 @@ void run(int thread_num, int protocol, bool auto_pick_server)
         return;
     }
 
-    if ((best_server_index = get_best_server(nearest_servers, protocol)) != -1)
+    if ((best_server_index = get_best_server(nearest_servers)) != -1)
     {        
         print_nearest_servers_table(nearest_servers);
 
@@ -109,7 +108,7 @@ void run(int thread_num, int protocol, bool auto_pick_server)
         if (!auto_pick_server)
         {
             printf("Choose server to test: ");
-            get_input_int(&choose, 0, thread_num);
+            get_input_int(&choose, 0, NEAREST_SERVERS_NUM);
 
             if (check_server(nearest_servers[choose]) == 1)
             {

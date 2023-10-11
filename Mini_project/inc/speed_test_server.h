@@ -18,7 +18,7 @@
 #include <openssl/x509.h>
 #include <openssl/evp.h>
 
-#define NEAREST_SERVERS_NUM 4
+#define NEAREST_SERVERS_NUM 5
 
 typedef struct client_data
 {
@@ -43,12 +43,18 @@ typedef struct server_data
 
 int get_ip_address_position(char *fileName, client_data_t *client_data);
 
-int get_best_server(server_data_t *nearest_servers, int protocol);
+int get_best_server(server_data_t *nearest_servers);
 
 int compare_latency(const void *a, const void *b);
 
 int get_nearest_server(double lat_c, double lon_c, server_data_t *nearest_servers);
 
 int check_server(server_data_t server_data);
+
+int check_server_https(server_data_t server_data);
+
+int get_nearest_server_https(double lat_c, double lon_c, server_data_t *nearest_servers);
+
+int get_best_server_https(server_data_t *nearest_servers);
 
 #endif

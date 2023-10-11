@@ -20,6 +20,7 @@
         "semaphore_synchronize.h": "c",
         "mutex_synchronize.h": "c",
         "string.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "inet.h": "c"
     }
 }

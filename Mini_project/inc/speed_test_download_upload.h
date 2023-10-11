@@ -21,7 +21,7 @@
 #include "speed_test_server.h"
 
 #define MAX_THREAD_NUMBER 10
-#define SPEEDTEST_DURATION 4
+#define SPEEDTEST_DURATION 20
 
 #define UL_BUFFER_SIZE 8192
 #define UL_BUFFER_TIMES 10240

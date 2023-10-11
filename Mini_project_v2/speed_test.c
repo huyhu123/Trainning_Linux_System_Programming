@@ -1,17 +1,29 @@
 #include <stdio.h>
 #include <curl/curl.h>
-#include <json-c/json.h>
 #include <stdlib.h>
 #include <string.h>
+#include <pthread.h>
+#include <unistd.h>
+
+// Todo
+// Mutex
+
+// Duration to mesure speed
+#define DURATION_SECONDS 3
 
 // Speedtest by Ookla API URL
 #define SPEEDTEST_API_URL "https://www.speedtest.net/api/js/servers"
+
+// Todo
 #define MAX_SERVERS 100
+
 #define MAX_LENGTH 500
+#define NUM_THREADS 10
 
 #define TIMEOUT_THRESHOLD 3
 
-typedef struct {
+typedef struct
+{
     char url[100];
     char lat[20];
     char lon[20];
@@ -27,8 +39,15 @@ typedef struct {
     int force_ping_select;
 } Server;
 
-Server servers[MAX_SERVERS];
+typedef struct
+{
+    const char *url;
+    const char *file_path;
+    double avg_speed;
+    pthread_mutex_t *mutex;
+} ThreadData;
 
+Server servers[MAX_SERVERS];
 
 // Function to discard response data
 size_t discard_response(void *ptr, size_t size, size_t nmemb, void *data)
@@ -37,9 +56,11 @@ size_t discard_response(void *ptr, size_t size, size_t nmemb, void *data)
     return size * nmemb;
 }
 
-// Function to test internet upload speed
-double test_upload_speed(const char *url, const char *file_path)
+// Thread function to test internet upload speed
+void *test_upload_speed_thread(void *arg)
 {
+    ThreadData *thread_data = (ThreadData *)arg;
+
     CURL *curl;
     CURLcode res;
     double upload_speed = 0.0;
@@ -52,30 +73,33 @@ double test_upload_speed(const char *url, const char *file_path)
     {
         // Set the URL to upload to
         curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
-        curl_easy_setopt(curl, CURLOPT_URL, url);
+        curl_easy_setopt(curl, CURLOPT_URL, thread_data->url);
 
         // Set the file to upload
-        curl_easy_setopt(curl, CURLOPT_READDATA, fopen(file_path, "rb"));
+        curl_easy_setopt(curl, CURLOPT_READDATA, fopen(thread_data->file_path, "rb"));
 
         // Discard response data
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, discard_response);
 
-        // Set timeout option
+        // Set the timeout for the upload connection
         curl_easy_setopt(curl, CURLOPT_TIMEOUT, TIMEOUT_THRESHOLD);
 
-        // Perform the upload
-        res = curl_easy_perform(curl);
-
-        if (res == CURLE_OK)
+        // Perform the upload for the specified duration
+        time_t start_time = time(NULL);
+        do
         {
-            // Get upload speed
-            curl_easy_getinfo(curl, CURLINFO_SPEED_UPLOAD, &upload_speed);
-            printf("Upload Speed: %.2f bytes/sec\n", upload_speed);
-        }
-        else
-        {
-            fprintf(stderr, "Upload failed: %s\n", curl_easy_strerror(res));
-        }
+            res = curl_easy_perform(curl);
+            if (res == CURLE_OK)
+            {
+                double speed;
+                curl_easy_getinfo(curl, CURLINFO_SPEED_UPLOAD, &speed);
+                upload_speed += speed;
+            }
+            else
+            {
+                // fprintf(stderr, "Upload failed: %s\n", curl_easy_strerror(res));
+            }
+        } while (time(NULL) - start_time < DURATION_SECONDS);
 
         // Clean up
         curl_easy_cleanup(curl);
@@ -84,11 +108,41 @@ double test_upload_speed(const char *url, const char *file_path)
     // Cleanup global curl
     curl_global_cleanup();
 
-    return upload_speed;
+    // Calculate average upload speed
+    thread_data->avg_speed = upload_speed / DURATION_SECONDS;
+
+    pthread_exit(NULL);
+}
+
+// Function to test internet upload speed using multiple threads
+double test_upload_speed(const char *url, const char *file_path)
+{
+    pthread_t threads[NUM_THREADS];
+    ThreadData thread_data[NUM_THREADS];
+    double total_upload_speed = 0.0;
+
+    for (int i = 0; i < NUM_THREADS; i++)
+    {
+        thread_data[i].url = url;
+        thread_data[i].file_path = file_path;
+        thread_data[i].avg_speed = 0.0;
+
+        pthread_create(&threads[i], NULL, test_upload_speed_thread, (void *)&thread_data[i]);
+    }
+
+    for (int i = 0; i < NUM_THREADS; i++)
+    {
+        pthread_join(threads[i], NULL);
+        total_upload_speed += thread_data[i].avg_speed;
+    }
+
+    double avg_speed = total_upload_speed / NUM_THREADS;
+    printf("Average Upload Speed: %.2f Mbs/sec\n", avg_speed / 1000);
+
+    return avg_speed;
 }
 
 void replace(char str[], char sub[], char nstr[])
-
 {
     int strLen, subLen, nstrLen;
     int i = 0, j, k;
@@ -157,14 +211,13 @@ int parse_server_data()
         }
 
         sscanf(token,
-            "\"url\":\"%[^\"]\",\"lat\":\"%[^\"]\",\"lon\":\"%[^\"]\",\"distance\":%d,\"name\":\"%[^\"]\",\"country\":\"%[^\"]\",\"cc\":\"%[^\"]\",\"sponsor\":\"%[^\"]\",\"id\":\"%[^\"]\",\"preferred\":%d,\"https_functional\":%d,\"host\":\"%[^\"]\",\"force_ping_select\":%d",
-            servers[i].url, servers[i].lat, servers[i].lon, &servers[i].distance, servers[i].name,
-            servers[i].country, servers[i].cc, servers[i].sponsor, servers[i].id, &servers[i].preferred,
-            &servers[i].https_functional, servers[i].host, &servers[i].force_ping_select);
+               "\"url\":\"%[^\"]\",\"lat\":\"%[^\"]\",\"lon\":\"%[^\"]\",\"distance\":%d,\"name\":\"%[^\"]\",\"country\":\"%[^\"]\",\"cc\":\"%[^\"]\",\"sponsor\":\"%[^\"]\",\"id\":\"%[^\"]\",\"preferred\":%d,\"https_functional\":%d,\"host\":\"%[^\"]\",\"force_ping_select\":%d",
+               servers[i].url, servers[i].lat, servers[i].lon, &servers[i].distance, servers[i].name,
+               servers[i].country, servers[i].cc, servers[i].sponsor, servers[i].id, &servers[i].preferred,
+               &servers[i].https_functional, servers[i].host, &servers[i].force_ping_select);
 
-        //printf("%s\n\n", token);
+        // printf("%s\n\n", token);
 
-        
         token = strtok(NULL, "!");
         i++;
     }
@@ -181,10 +234,11 @@ void fix_url(int server_num)
         char *token = strtok(servers[i].url, "!");
         strcpy(servers[i].url, token);
         strcat(servers[i].url, "\0");
-        //printf("%s\n", servers[i].url);
+        // printf("%s\n", servers[i].url);
     }
 }
 
+/*
 // Function to test internet download speed
 double test_download_speed(const char *url)
 {
@@ -230,6 +284,92 @@ double test_download_speed(const char *url)
 
     return download_speed;
 }
+*/
+
+// Thread function to test internet upload speed
+void *test_download_speed_thread(void *arg)
+{
+    ThreadData *thread_data = (ThreadData *)arg;
+
+    CURL *curl;
+    CURLcode res;
+    double download_speed = 0.0;
+
+    // Initialize libcurl
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+    curl = curl_easy_init();
+
+    if (curl)
+    {
+        // Set the URL to download from
+        curl_easy_setopt(curl, CURLOPT_URL, thread_data->url);
+
+        // Discard response data
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, discard_response);
+
+        // Set timeout option
+        curl_easy_setopt(curl, CURLOPT_TIMEOUT, TIMEOUT_THRESHOLD);
+
+        // Perform the download
+        res = curl_easy_perform(curl);
+
+        // Perform the upload for the specified duration
+        time_t start_time = time(NULL);
+        do
+        {
+            res = curl_easy_perform(curl);
+            if (res == CURLE_OK)
+            {
+                double speed;
+                curl_easy_getinfo(curl, CURLINFO_SPEED_DOWNLOAD, &download_speed);
+                download_speed += speed;
+            }
+            else
+            {
+                // fprintf(stderr, "Upload failed: %s\n", curl_easy_strerror(res));
+            }
+        } while (time(NULL) - start_time < DURATION_SECONDS);
+
+        // Clean up
+        curl_easy_cleanup(curl);
+    }
+
+    // Cleanup global curl
+    curl_global_cleanup();
+
+    // Calculate average upload speed
+    thread_data->avg_speed = download_speed / DURATION_SECONDS;
+
+    pthread_exit(NULL);
+}
+
+// Function to test internet upload speed using multiple threads
+double test_download_speed(const char *url, const char *file_path)
+{
+    pthread_t threads[NUM_THREADS];
+    ThreadData thread_data[NUM_THREADS];
+    double total_download_speed = 0.0;
+
+    for (int i = 0; i < NUM_THREADS; i++)
+    {
+        thread_data[i].url = url;
+        thread_data[i].file_path = file_path;
+        thread_data[i].avg_speed = 0.0;
+
+        pthread_create(&threads[i], NULL, test_download_speed_thread, (void *)&thread_data[i]);
+    }
+
+    for (int i = 0; i < NUM_THREADS; i++)
+    {
+        pthread_join(threads[i], NULL);
+        total_download_speed += thread_data[i].avg_speed;
+    }
+
+    double avg_speed = total_download_speed / NUM_THREADS;
+    printf("Average Download Speed: %.2f Mbs/sec\n", avg_speed / 1000);
+
+    return avg_speed;
+}
 
 // Function to find the best server nearby
 void find_best_server()
@@ -267,16 +407,13 @@ void find_best_server()
 
 int main()
 {
-    // Find the best server nearby
+    // Find all the server nearby
     find_best_server();
 
     int server_num = parse_server_data();
     fix_url(server_num);
-    
-    //const char *upload_url = "http://speedtesthni2.viettel.vn";
-    //const char *download_url = "http://speedtesthni2.viettel.vn";
-    const char *file_path = "upload.txt";
 
+    const char *file_path = "upload.txt";
 
     for (int i = 0; i < server_num; i++)
     {
@@ -285,28 +422,17 @@ int main()
         printf("%s\n", servers[i].url);
 
         double upload_speed = test_upload_speed(upload_url, file_path);
-
-        if (upload_speed > 0.0)
-        {
-            printf("Upload speed test completed.\n");
-        }
-        else
+        if (upload_speed <= 0)
         {
             printf("Upload speed test failed.\n");
         }
 
-        double download_speed = test_download_speed(download_url);
-
-        if (download_speed > 0.0)
-        {
-            printf("Download speed test completed.\n");
-        }
-        else
+        double download_speed = test_download_speed(download_url, file_path);
+        if (download_speed <= 0)
         {
             printf("Download speed test failed.\n");
         }
     }
 
-    
     return 0;
 }

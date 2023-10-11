@@ -61,6 +61,8 @@ void *test_upload_speed_thread(void *arg)
 {
     ThreadData *thread_data = (ThreadData *)arg;
 
+    pthread_mutex_t *mutex = thread_data->mutex;
+
     CURL *curl;
     CURLcode res;
     double upload_speed = 0.0;
@@ -109,7 +111,9 @@ void *test_upload_speed_thread(void *arg)
     curl_global_cleanup();
 
     // Calculate average upload speed
+    pthread_mutex_lock(mutex);
     thread_data->avg_speed = upload_speed / DURATION_SECONDS;
+    pthread_mutex_unlock(mutex);
 
     pthread_exit(NULL);
 }
@@ -121,11 +125,14 @@ double test_upload_speed(const char *url, const char *file_path)
     ThreadData thread_data[NUM_THREADS];
     double total_upload_speed = 0.0;
 
+    pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
     for (int i = 0; i < NUM_THREADS; i++)
     {
         thread_data[i].url = url;
         thread_data[i].file_path = file_path;
         thread_data[i].avg_speed = 0.0;
+        thread_data[i].mutex = &mutex;
 
         pthread_create(&threads[i], NULL, test_upload_speed_thread, (void *)&thread_data[i]);
     }
@@ -238,58 +245,12 @@ void fix_url(int server_num)
     }
 }
 
-/*
-// Function to test internet download speed
-double test_download_speed(const char *url)
-{
-    CURL *curl;
-    CURLcode res;
-    double download_speed = 0.0;
-
-    // Initialize libcurl
-    curl_global_init(CURL_GLOBAL_DEFAULT);
-    curl = curl_easy_init();
-
-    if (curl)
-    {
-        // Set the URL to download from
-        curl_easy_setopt(curl, CURLOPT_URL, url);
-
-        // Discard response data
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, discard_response);
-
-        // Set timeout option
-        curl_easy_setopt(curl, CURLOPT_TIMEOUT, TIMEOUT_THRESHOLD);
-
-        // Perform the download
-        res = curl_easy_perform(curl);
-
-        if (res == CURLE_OK)
-        {
-            // Get download speed
-            curl_easy_getinfo(curl, CURLINFO_SPEED_DOWNLOAD, &download_speed);
-            printf("Download Speed: %.2f bytes/sec\n", download_speed);
-        }
-        else
-        {
-            fprintf(stderr, "Download failed: %s\n", curl_easy_strerror(res));
-        }
-
-        // Clean up
-        curl_easy_cleanup(curl);
-    }
-
-    // Cleanup global curl
-    curl_global_cleanup();
-
-    return download_speed;
-}
-*/
-
 // Thread function to test internet upload speed
 void *test_download_speed_thread(void *arg)
 {
     ThreadData *thread_data = (ThreadData *)arg;
+
+    pthread_mutex_t *mutex = thread_data->mutex;
 
     CURL *curl;
     CURLcode res;
@@ -338,23 +299,28 @@ void *test_download_speed_thread(void *arg)
     curl_global_cleanup();
 
     // Calculate average upload speed
+    pthread_mutex_lock(mutex);
     thread_data->avg_speed = download_speed / DURATION_SECONDS;
+    pthread_mutex_unlock(mutex);
 
     pthread_exit(NULL);
 }
 
 // Function to test internet upload speed using multiple threads
-double test_download_speed(const char *url, const char *file_path)
+double test_download_speed(const char *url)
 {
     pthread_t threads[NUM_THREADS];
     ThreadData thread_data[NUM_THREADS];
     double total_download_speed = 0.0;
 
+    pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
     for (int i = 0; i < NUM_THREADS; i++)
     {
         thread_data[i].url = url;
-        thread_data[i].file_path = file_path;
+        thread_data[i].file_path = NULL;
         thread_data[i].avg_speed = 0.0;
+        thread_data[i].mutex = &mutex;
 
         pthread_create(&threads[i], NULL, test_download_speed_thread, (void *)&thread_data[i]);
     }
@@ -427,7 +393,7 @@ int main()
             printf("Upload speed test failed.\n");
         }
 
-        double download_speed = test_download_speed(download_url, file_path);
+        double download_speed = test_download_speed(download_url);
         if (download_speed <= 0)
         {
             printf("Download speed test failed.\n");

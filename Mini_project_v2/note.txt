@@ -1,0 +1,3 @@
+can you write a function in c to split the servers informationin the output.txt and save it in an array.
+output.txt:
+[{"url":"http:\/\/speedtesthni2.viettel.vn:8080\/speedtest\/upload.php","lat":"20.8467","lon":"106.6918","distance":1,"name":"Hai Phong","country":"Vietnam","cc":"VN","sponsor":"Viettel Network","id":"52642","preferred":0,"https_functional":1,"host":"speedtesthni2.viettel.vn.prod.hosts.ooklaserver.net:8080","force_ping_select":1},{"url":"http:\/\/speedtest7.vtn.com.vn:8080\/speedtest\/upload.php","lat":"20.8467","lon":"106.6918","distance":1,"name":"Hai Phong","country":"Vietnam","cc":"VN","sponsor":"VNPT-NET","id":"45493","preferred":0,"https_functional":1,"host":"speedtest7.vtn.com.vn.prod.hosts.ooklaserver.net:8080"}] 

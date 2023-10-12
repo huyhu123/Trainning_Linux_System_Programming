@@ -10,7 +10,7 @@ run: main
 	./main
 
 main: main.c $(SRC)
-	$(CC) $(INC) main.c $(SRC) -o main -lcurl -I/usr/include/json-c -L/usr/lib -ljson-c -pthread
+	$(CC) $(INC) main.c $(SRC) -o main -lcurl -pthread
 
 debug_memory: main.c $(SRC)
 	$(CC) $(INC) main.c $(SRC) -std=c11 -lm -o debug

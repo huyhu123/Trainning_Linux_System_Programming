@@ -9,6 +9,11 @@
 #include "speed_test.h"
 #include "input.h"
 
+void check_input(int argc, char* argv[])
+{
+    
+}
+
 int main(int argc, char* argv[])
 {
     int count = 1;
@@ -29,7 +34,7 @@ int main(int argc, char* argv[])
             printf("\t Choose number of thread (Default 3): -t=<Number of thread> \n");
             printf("\t Choose protocol (Default https): -p=<Protocol (http/https)> \n");
             printf("\t Choose server manually (Default auto): -m \n");
-            printf("\t Example: ./main -t=5 -p=https -m \n");
+            printf("Example: ./main -t=5 -p=https -m \n");
             return 0;
         }
         else if (strcmp(argv[count], "-m") == 0)
@@ -104,7 +109,6 @@ int main(int argc, char* argv[])
     {
         printf("Auto pick server: False\n");
     }
-    
     printf("===============================================\n");
 
     // Run speed test

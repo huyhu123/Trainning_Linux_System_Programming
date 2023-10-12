@@ -223,7 +223,7 @@ void run_speed_test(int num_thread, bool https, bool auto_pick_server)
         count = 0;
         while (count < server_num)
         {
-            printf("Testing speed from: %s\n", get_server_url(count));
+            printf("Testing speed from lowest latency server: %s\n", get_server_url(count));
 
             upload_speed = test_upload_speed(get_server_url(count), file_path, num_thread);
             if (upload_speed <= 0)
@@ -259,7 +259,7 @@ void run_speed_test(int num_thread, bool https, bool auto_pick_server)
         while (1)
         {
             printf("Choose server to test: ");
-            get_input_int(&choose, 0, server_num);
+            get_input_int(&choose, 0, server_num - 1);
             printf("Testing speed from: %s\n", get_server_url(choose));
             
             upload_speed = test_upload_speed(get_server_url(choose), file_path, num_thread);

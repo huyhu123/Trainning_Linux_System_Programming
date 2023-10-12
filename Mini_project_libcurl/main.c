@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
         {
             printf("Usage: \n");
             printf("\t Choose number of thread (Default 3): -t=<Number of thread> \n");
-            printf("\t Choose protocol (Default https): -p=<Protocol (http/https)> \n");
+            printf("\t Choose protocol (Default http): -p=<Protocol (http/https)> \n");
             printf("\t Choose server manually (Default auto): -m \n");
             printf("Example: ./main -t=5 -p=https -m \n");
             return 0;

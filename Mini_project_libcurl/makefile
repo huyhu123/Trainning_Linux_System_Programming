@@ -10,7 +10,7 @@ run: main
 	./main
 
 main: main.c $(SRC)
-	$(CC) $(INC) main.c $(SRC) -o main -lcurl -pthread
+	$(CC) $(INC) main.c $(SRC) -o main -lcurl -pthread -lm
 
 debug_memory: main.c $(SRC)
 	$(CC) $(INC) main.c $(SRC) -std=c11 -lm -o debug

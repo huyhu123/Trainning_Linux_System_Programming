@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
         printf("Enter message: ");
         fgets(buffer, BUFFER_SIZE, stdin);
 
-        if ((bytes_sent = send(client_fd, buffer, strlen(buffer), 0)) != strlen(buffer))
+        if ((bytes_sent = send(client_fd, buffer, str_len(buffer), 0)) != str_len(buffer))
         {
             perror("send failed");
             exit(EXIT_FAILURE);

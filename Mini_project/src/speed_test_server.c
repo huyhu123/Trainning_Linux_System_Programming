@@ -226,7 +226,7 @@ int get_best_server(server_data_t *nearest_servers)
         while (ptr != NULL)
         {
             memset(buf, 0, sizeof(buf));
-            strncpy(buf, ptr, strlen(ptr));
+            strncpy(buf, ptr, str_len(ptr));
 
             // Change file name to "latency.txt"
             if (strstr(buf, "upload.") != NULL)
@@ -252,8 +252,8 @@ int get_best_server(server_data_t *nearest_servers)
         memset(latency_request_url, 0, sizeof(latency_request_url));
         if ((ptr = strstr(latency_url[i], nearest_servers[i].domain_name)) != NULL)
         {
-            ptr += strlen(nearest_servers[i].domain_name);
-            strncpy(latency_request_url, ptr, strlen(ptr));
+            ptr += str_len(nearest_servers[i].domain_name);
+            strncpy(latency_request_url, ptr, str_len(ptr));
         }
         
         if (get_ipv4_addr(nearest_servers[i].domain_name, &servinfo))
@@ -269,7 +269,7 @@ int get_best_server(server_data_t *nearest_servers)
         if ((fp = fopen(filePath, "r")) != NULL)
         {
             fgets(line, sizeof(line), fp);
-            if (!strncmp(line, latency_file_string, strlen(latency_file_string)))
+            if (!strncmp(line, latency_file_string, str_len(latency_file_string)))
                 nearest_servers[i].latency = (tv2.tv_sec - tv1.tv_sec) * 1000000 + tv2.tv_usec - tv1.tv_usec;
             else
                 nearest_servers[i].latency = -1;
@@ -323,7 +323,7 @@ int get_best_server_https(server_data_t *nearest_servers)
         while (ptr != NULL)
         {
             memset(buf, 0, sizeof(buf));
-            strncpy(buf, ptr, strlen(ptr));
+            strncpy(buf, ptr, str_len(ptr));
 
             // Change file name to "latency.txt"
             if (strstr(buf, "upload.") != NULL)
@@ -349,8 +349,8 @@ int get_best_server_https(server_data_t *nearest_servers)
         memset(latency_request_url, 0, sizeof(latency_request_url));
         if ((ptr = strstr(latency_url[i], nearest_servers[i].domain_name)) != NULL)
         {
-            ptr += strlen(nearest_servers[i].domain_name);
-            strncpy(latency_request_url, ptr, strlen(ptr));
+            ptr += str_len(nearest_servers[i].domain_name);
+            strncpy(latency_request_url, ptr, str_len(ptr));
         }
         
         if (get_ipv4_addr_https(nearest_servers[i].domain_name, &servinfo))
@@ -366,7 +366,7 @@ int get_best_server_https(server_data_t *nearest_servers)
         if ((fp = fopen(filePath, "r")) != NULL)
         {
             fgets(line, sizeof(line), fp);
-            if (!strncmp(line, latency_file_string, strlen(latency_file_string)))
+            if (!strncmp(line, latency_file_string, str_len(latency_file_string)))
                 nearest_servers[i].latency = (tv2.tv_sec - tv1.tv_sec) * 1000000 + tv2.tv_usec - tv1.tv_usec;
             else
                 nearest_servers[i].latency = -1;
@@ -422,7 +422,7 @@ int check_server(server_data_t server_data)
             "Accept: */*\r\n\r\n",
             server_data.url, server_data.domain_name);
 
-    if (send(fd, sbuf, strlen(sbuf), 0) != strlen(sbuf))
+    if (send(fd, sbuf, str_len(sbuf), 0) != str_len(sbuf))
     {
         perror("Can't send data to server\n");
         return 1;
@@ -497,7 +497,7 @@ int check_server_https(server_data_t server_data)
             "Connection: close\r\n\r\n",
             server_data.url, server_data.domain_name);
 
-    if (SSL_write(ssl, sbuf, strlen(sbuf)) != strlen(sbuf))
+    if (SSL_write(ssl, sbuf, str_len(sbuf)) != str_len(sbuf))
     {
         perror("Can't send data to server\n");
         SSL_free(ssl);

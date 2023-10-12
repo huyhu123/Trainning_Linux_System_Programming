@@ -13,6 +13,8 @@ void *test_upload_speed_thread(void *arg)
     CURL *curl;
     CURLcode res;
     double upload_speed = 0.0;
+    time_t start_time = 0;
+    double speed = 0;
 
     // Initialize libcurl
     curl_global_init(CURL_GLOBAL_DEFAULT);
@@ -34,13 +36,12 @@ void *test_upload_speed_thread(void *arg)
         curl_easy_setopt(curl, CURLOPT_TIMEOUT, TIMEOUT_THRESHOLD);
 
         // Perform the upload for the specified duration
-        time_t start_time = time(NULL);
+        start_time = time(NULL);
         do
         {
             res = curl_easy_perform(curl);
             if (res == CURLE_OK)
             {
-                double speed;
                 curl_easy_getinfo(curl, CURLINFO_SPEED_UPLOAD, &speed);
                 upload_speed += speed;
             }
@@ -71,6 +72,7 @@ double test_upload_speed(const char *url, const char *file_path, int num_thread)
     pthread_t threads[num_thread];
     ThreadData thread_data[num_thread];
     double total_upload_speed = 0.0;
+    double avg_speed = 0;
 
     pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -90,8 +92,8 @@ double test_upload_speed(const char *url, const char *file_path, int num_thread)
         total_upload_speed += thread_data[i].avg_speed;
     }
 
-    double avg_speed = total_upload_speed / num_thread;
-    printf("Average Upload Speed: %.2f Mbs/sec\n", avg_speed / 1000);
+    avg_speed = total_upload_speed / num_thread;
+    printf("Average Upload Speed: %.2f Mb/sec\n", avg_speed / 125000);
 
     return avg_speed;
 }
@@ -106,6 +108,8 @@ void *test_download_speed_thread(void *arg)
     CURL *curl;
     CURLcode res;
     double download_speed = 0.0;
+    time_t start_time = 0;
+    double speed = 0;
 
     // Initialize libcurl
     curl_global_init(CURL_GLOBAL_DEFAULT);
@@ -126,13 +130,12 @@ void *test_download_speed_thread(void *arg)
         res = curl_easy_perform(curl);
 
         // Perform the upload for the specified duration
-        time_t start_time = time(NULL);
+        start_time = time(NULL);
         do
         {
             res = curl_easy_perform(curl);
             if (res == CURLE_OK)
             {
-                double speed;
                 curl_easy_getinfo(curl, CURLINFO_SPEED_DOWNLOAD, &download_speed);
                 download_speed += speed;
             }
@@ -163,6 +166,7 @@ double test_download_speed(const char *url, int num_thread)
     pthread_t threads[num_thread];
     ThreadData thread_data[num_thread];
     double total_download_speed = 0.0;
+    double avg_speed = 0;
 
     pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -182,8 +186,8 @@ double test_download_speed(const char *url, int num_thread)
         total_download_speed += thread_data[i].avg_speed;
     }
 
-    double avg_speed = total_download_speed / num_thread;
-    printf("Average Download Speed: %.2f Mbs/sec\n", avg_speed / 1000);
+    avg_speed = total_download_speed / num_thread;
+    printf("Average Download Speed: %.2f Mb/sec\n", avg_speed / 125000);
 
     return avg_speed;
 }
@@ -226,6 +230,11 @@ void run_speed_test(int num_thread, bool https, bool auto_pick_server)
             {
                 printf("Upload test failed. Trying next server ...\n");
                 count++;
+                if (count >= server_num)
+                {
+                    printf("No server available\n");
+                    break;
+                }
                 continue;
             }
 
@@ -234,6 +243,11 @@ void run_speed_test(int num_thread, bool https, bool auto_pick_server)
             {
                 printf("Download speed test failed. Trying next server ...\n");
                 count++;
+                if (count >= server_num)
+                {
+                    printf("No server available\n");
+                    break;
+                }
                 continue;
             }
 

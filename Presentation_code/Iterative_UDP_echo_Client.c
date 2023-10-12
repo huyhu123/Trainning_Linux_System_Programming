@@ -36,13 +36,13 @@ int main()
         buffer[strcspn(buffer, "\n")] = '\0'; // remove the newline character
 
         // send the message to the server
-        if (sendto(client_socket, buffer, strlen(buffer), 0, (struct sockaddr *)&server_address, sizeof(server_address)) == -1)
+        if (sendto(client_socket, buffer, str_len(buffer), 0, (struct sockaddr *)&server_address, sizeof(server_address)) == -1)
         {
             perror("sendto");
             exit(EXIT_FAILURE);
         }
 
-        printf("Sent %ld bytes to %s:%d\n", strlen(buffer), SERVER_IP, PORT);
+        printf("Sent %ld bytes to %s:%d\n", str_len(buffer), SERVER_IP, PORT);
 
         // receive the response from the server
         memset(buffer, 0, BUFFER_SIZE);

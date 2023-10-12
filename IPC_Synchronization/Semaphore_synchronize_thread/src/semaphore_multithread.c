@@ -42,7 +42,7 @@ void *thread_function(void *arg)
     for (int i = 0; i < 10; i++)
     {
         // Clear string
-        memset(filename, 0, strlen(filename));
+        memset(filename, 0, str_len(filename));
 
         // Random output file
         rand = random_int(1, 2);

@@ -21,6 +21,7 @@
         "mutex_synchronize.h": "c",
         "string.h": "c",
         "stdlib.h": "c",
-        "inet.h": "c"
+        "inet.h": "c",
+        "speed_test_utils.h": "c"
     }
 }

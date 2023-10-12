@@ -41,7 +41,7 @@ bool check_empty_dir(const char file_name[])
 {
     int index = 0;
 
-    for (index; index < strlen(file_name); index++)
+    for (index; index < str_len(file_name); index++)
     {
         if (file_name[index] != '\\' && file_name[index] != '/' && file_name[index] != '.')
         {
@@ -109,13 +109,13 @@ bool is_validfile_name(const char *file_name)
     const char *invalid_chars = "\\/:*?\"<>|";
 
     // Check if the file name is empty or exceeds the maximum length
-    if (strlen(file_name) == 0 || strlen(file_name) > MAX_FILE_SIZE)
+    if (str_len(file_name) == 0 || str_len(file_name) > MAX_FILE_SIZE)
     {
         return false;
     }
 
     // Check if the file name contains any invalid characters
-    for (int i = 0; i < strlen(invalid_chars); i++)
+    for (int i = 0; i < str_len(invalid_chars); i++)
     {
         if (strchr(file_name, invalid_chars[i]) != NULL)
         {
@@ -125,7 +125,7 @@ bool is_validfile_name(const char *file_name)
 
     // Check if the file name starts or ends with a space or a period
     if (file_name[0] == ' ' || file_name[0] == '.' ||
-        file_name[strlen(file_name) - 1] == ' ' || file_name[strlen(file_name) - 1] == '.')
+        file_name[str_len(file_name) - 1] == ' ' || file_name[str_len(file_name) - 1] == '.')
     {
         return false;
     }

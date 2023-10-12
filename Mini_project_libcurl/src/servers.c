@@ -1,6 +1,7 @@
 #include "servers.h"
 
-Server servers[MAX_SERVERS];
+server_t servers[MAX_SERVERS];
+server_t client_server;
 
 // Function to discard response data
 size_t discard_response(void *ptr, size_t size, size_t nmemb, void *data)
@@ -14,22 +15,74 @@ char *get_server_url(int index)
     return servers[index].url;
 }
 
+void delete_server_by_index(int index)
+{
+    if (index < 0 || index >= MAX_SERVERS)
+    {
+        printf("Invalid index!");
+        return;
+    }
+
+    // Shift elements to the left starting from the index
+    for (int i = index; i < MAX_SERVERS - 1; i++)
+    {
+        strcpy(servers[i].url, servers[i + 1].url);
+        strcpy(servers[i].lat, servers[i + 1].lat);
+        strcpy(servers[i].lon, servers[i + 1].lon);
+        servers[i].distance = servers[i + 1].distance;
+        strcpy(servers[i].name, servers[i + 1].name);
+        strcpy(servers[i].country, servers[i + 1].country);
+        strcpy(servers[i].cc, servers[i + 1].cc);
+        strcpy(servers[i].sponsor, servers[i + 1].sponsor);
+        strcpy(servers[i].id, servers[i + 1].id);
+        servers[i].preferred = servers[i + 1].preferred;
+        servers[i].https_functional = servers[i + 1].https_functional;
+        strcpy(servers[i].host, servers[i + 1].host);
+        servers[i].force_ping_select = servers[i + 1].force_ping_select;
+        servers[i].latency = servers[i + 1].latency;
+    }
+
+    // Clear the last element
+    memset(&servers[MAX_SERVERS - 1], 0, sizeof(server_t));
+}
+
+// Haversine formula
+double calc_distance(double lat1, double lon1, double lat2, double lon2)
+{
+    int R = 6371; // Radius of the Earth
+    double dlat, dlon, a, c, d;
+
+    dlat = (lat2 - lat1) * M_PI / 180;
+    dlon = (lon2 - lon1) * M_PI / 180;
+
+    a = pow(sin(dlat / 2), 2) + cos(lat1 * M_PI / 180) * cos(lat2 * M_PI / 180) * pow(sin(dlon / 2), 2);
+    c = 2 * atan2(sqrt(a), sqrt(1 - a));
+    d = R * c;
+    return d;
+}
+
 void replace(char str[], char sub[], char nstr[])
 {
-    int strLen, subLen, nstrLen;
-    int i = 0, j, k;
-    int flag = 0, start, end;
+    int str_len = 0;
+    int sub_len = 0;
+    int nstr_len = 0;
+    int i = 0;
+    int j = 0;
+    int k = 0;
+    int flag = 0;
+    int start = 0;
+    int end = 0;
 
-    strLen = strlen(str);
-    subLen = strlen(sub);
-    nstrLen = strlen(nstr);
+    str_len = strlen(str);
+    sub_len = strlen(sub);
+    nstr_len = strlen(nstr);
 
-    for (i = 0; i < strLen; i++)
+    for (i = 0; i < str_len; i++)
     {
         flag = 0;
         start = i;
         for (j = 0; str[i] == sub[j]; j++, i++)
-            if (j == subLen - 1)
+            if (j == sub_len - 1)
                 flag = 1;
         end = i;
 
@@ -39,17 +92,17 @@ void replace(char str[], char sub[], char nstr[])
         {
             for (j = start; j < end; j++)
             {
-                for (k = start; k < strLen; k++)
+                for (k = start; k < str_len; k++)
                     str[k] = str[k + 1];
-                strLen--;
+                str_len--;
                 i--;
             }
-            for (j = start; j < start + nstrLen; j++)
+            for (j = start; j < start + nstr_len; j++)
             {
-                for (k = strLen; k >= j; k--)
+                for (k = str_len; k >= j; k--)
                     str[k + 1] = str[k];
                 str[j] = nstr[j - start];
-                strLen++;
+                str_len++;
                 i++;
             }
         }
@@ -59,13 +112,13 @@ void replace(char str[], char sub[], char nstr[])
 // Function to find the best server nearby
 void find_best_server()
 {
-    // Redirect stdout to output.txt
-    freopen("output.txt", "w", stdout);
-
     CURL *curl;
     CURLcode res;
     struct json_object *json_servers;
     struct json_object *json_server;
+
+    // Redirect stdout to output.txt
+    freopen("output.txt", "w", stdout);
 
     // Initialize libcurl
     curl_global_init(CURL_GLOBAL_DEFAULT);
@@ -92,6 +145,11 @@ void find_best_server()
 
 int parse_server_data(bool https)
 {
+    char line[FILE_LENGTH];
+    int i = 0;
+    char *token;
+    int count = 0;
+
     FILE *file = fopen("output.txt", "r");
     if (file == NULL)
     {
@@ -99,37 +157,28 @@ int parse_server_data(bool https)
         return 0;
     }
 
+    // get_ip_address_position(CONFIG_REQUEST_URL, &client_server);
+
     // Read the contents of the file
-    char line[10000];
     fgets(line, sizeof(line), file);
 
     replace(line, "},{", "!");
-
-    int i = 0;
-    char *token = strtok(line, "!");
-
+    token = strtok(line, "!");
     while (token != NULL)
     {
+        // Delete [{ at the start
         if (i == 0)
         {
             memmove(&token[i], &token[i + 1], strlen(token) - i);
             memmove(&token[i], &token[i + 1], strlen(token) - i);
         }
 
+        // Parse server data
         sscanf(token,
                "\"url\":\"%[^\"]\",\"lat\":\"%[^\"]\",\"lon\":\"%[^\"]\",\"distance\":%d,\"name\":\"%[^\"]\",\"country\":\"%[^\"]\",\"cc\":\"%[^\"]\",\"sponsor\":\"%[^\"]\",\"id\":\"%[^\"]\",\"preferred\":%d,\"https_functional\":%d,\"host\":\"%[^\"]\",\"force_ping_select\":%d",
                servers[i].url, servers[i].lat, servers[i].lon, &servers[i].distance, servers[i].name,
                servers[i].country, servers[i].cc, servers[i].sponsor, servers[i].id, &servers[i].preferred,
                &servers[i].https_functional, servers[i].host, &servers[i].force_ping_select);
-
-        // printf("%s\n\n", token);
-        if (!https)
-        {
-            if (servers[i].https_functional != 1)
-            {
-                continue;
-            }
-        }
 
         token = strtok(NULL, "!");
 
@@ -137,31 +186,67 @@ int parse_server_data(bool https)
         {
             break;
         }
-
         i++;
     }
 
+    remove("output.txt");
+
+    // Filter out http and https server
+    while (count <= i)
+    {
+        if (https)
+        {
+            if (servers[count].url[4] != 's')
+            {
+                delete_server_by_index(count);
+                count--;
+                i--;
+            }
+        }
+        else
+        {
+            if (servers[count].url[4] == 's')
+            {
+                delete_server_by_index(count);
+                count--;
+                i--;
+            }
+        }
+        count++;
+    }
+    if (https)
+    {
+        i++;
+    }
+
+    if (i == 0)
+    {
+        printf("\nList server empty!!\n");
+    }
     return i;
 }
 
 void format_url(int server_num)
 {
+    char *token;
+
     for (int i = 0; i < server_num; i++)
     {
         replace(servers[i].url, ":8", "!");
         replace(servers[i].url, "\\/\\/", "//");
-        char *token = strtok(servers[i].url, "!");
+        token = strtok(servers[i].url, "!");
         strcpy(servers[i].url, token);
         strcat(servers[i].url, "\0");
-        // printf("%s\n", servers[i].url);
     }
 }
 
 // Function to calculate server latency using libcurl
-float measure_latency(Server* server)
+float measure_latency(server_t *server)
 {
+    double total_time;
+
     // Initialize libcurl
-    CURL* curl = curl_easy_init();
+    CURL *curl = curl_easy_init();
     if (!curl)
     {
         fprintf(stderr, "Failed to initialize libcurl\n");
@@ -184,13 +269,12 @@ float measure_latency(Server* server)
     CURLcode res = curl_easy_perform(curl);
     if (res != CURLE_OK)
     {
-        //fprintf(stderr, "Failed to perform the request: %s\n", curl_easy_strerror(res));
+        // fprintf(stderr, "Failed to perform the request: %s\n", curl_easy_strerror(res));
         curl_easy_cleanup(curl);
         return -1.0f;
     }
 
     // Get the total time taken for the request
-    double total_time;
     res = curl_easy_getinfo(curl, CURLINFO_TOTAL_TIME, &total_time);
     if (res != CURLE_OK)
     {
@@ -208,11 +292,12 @@ float measure_latency(Server* server)
 
 void get_servers_latency(int server_num)
 {
+    float latency = 0;
     printf("Calculating server latency ...\n");
 
     for (int i = 0; i < server_num; i++)
     {
-        float latency = measure_latency(&servers[i]);
+        latency = measure_latency(&servers[i]);
         servers[i].latency = latency;
     }
 }
@@ -223,7 +308,7 @@ void sort_servers_by_latency(int server_num)
     int j = 0;
     float latency_1 = 0;
     float latency_2 = 0;
-    Server temp;
+    server_t temp;
 
     for (i = 0; i < server_num - 1; i++)
     {
@@ -244,30 +329,18 @@ void sort_servers_by_latency(int server_num)
             if (latency_1 > latency_2)
             {
                 // Swap servers[j] and servers[j+1]
-                memcpy(&temp, &servers[j], sizeof(Server));
-                memcpy(&servers[j], &servers[j + 1], sizeof(Server));
-                memcpy(&servers[j + 1], &temp, sizeof(Server));
+                memcpy(&temp, &servers[j], sizeof(server_t));
+                memcpy(&servers[j], &servers[j + 1], sizeof(server_t));
+                memcpy(&servers[j + 1], &temp, sizeof(server_t));
             }
         }
-    }
-}
-
-char *https_functional_to_string(int index)
-{
-    if (servers[index].https_functional == 1)
-    {
-        return "Yes";
-    }
-    else
-    {
-        return "No";
     }
 }
 
 void print_servers(int server_num)
 {
     printf("=========================================================================================================================================================================\n");
-    printf("%-5s %-60s %-15s %-15s %-15s %-15s %-15s %-15s\n", "ID", "URL", "Latitude", "Longitude", "HTTPS", "Country", "Distance", "Latency (ms)");
+    printf("%-5s %-60s %-15s %-15s %-15s %-15s %-15s %-15s\n", "ID", "URL", "Latitude", "Longitude", "Name", "Country", "Distance", "Latency (ms)");
     printf("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
     for (int i = 0; i < server_num; i++)
     {
@@ -275,7 +348,7 @@ void print_servers(int server_num)
                servers[i].url,
                servers[i].lat,
                servers[i].lon,
-               https_functional_to_string(i),
+               servers[i].name,
                servers[i].country,
                servers[i].distance,
                servers[i].latency);

@@ -8,31 +8,34 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <math.h>
 
 // Speedtest by Ookla API URL
 #define SPEEDTEST_API_URL "https://www.speedtest.net/api/js/servers"
 
-#define MAX_SERVERS 10
+#define STRING_LENGTH 200
+#define FILE_LENGTH 10000
 
+#define MAX_SERVERS 20
 #define TIMEOUT_THRESHOLD 1
 
 typedef struct
 {
-    char url[100];
-    char lat[20];
-    char lon[20];
+    char url[STRING_LENGTH];
+    char lat[STRING_LENGTH];
+    char lon[STRING_LENGTH];
     int distance;
-    char name[100];
-    char country[100];
-    char cc[3];
-    char sponsor[100];
-    char id[10];
+    char name[STRING_LENGTH];
+    char country[STRING_LENGTH];
+    char cc[STRING_LENGTH];
+    char sponsor[STRING_LENGTH];
+    char id[STRING_LENGTH];
     int preferred;
     int https_functional;
-    char host[100];
+    char host[STRING_LENGTH];
     int force_ping_select;
     float latency;
-} Server;
+} server_t;
 
 void find_best_server();
 

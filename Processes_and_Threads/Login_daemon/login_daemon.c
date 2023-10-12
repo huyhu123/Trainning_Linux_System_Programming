@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
                 {
                     time_t now = time(NULL);
                     char *timestamp = ctime(&now);
-                    timestamp[strlen(timestamp) - 1] = '\0'; // Remove newline character
+                    timestamp[str_len(timestamp) - 1] = '\0'; // Remove newline character
                     dprintf(log_fd, "%s: User %s logged in\n", timestamp, pw->pw_name);
                 }
             }

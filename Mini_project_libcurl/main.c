@@ -18,16 +18,11 @@ int main(int argc, char* argv[])
     // Default Settings
     int thread_num = 3;
     bool auto_pick_server = true;
-    bool https = true;
+    bool https = false;
 
     // Check input
     while (count < argc)
     {
-        if (argc == 1)
-        {
-            break;
-        }
-
         if (strcmp(argv[count], "--help") == 0)
         {
             printf("Usage: \n");
@@ -86,6 +81,12 @@ int main(int argc, char* argv[])
         count++;
     }
 
+    if (argc == 1)
+    {
+        printf("\nRunning with default options, to change option --help\n\n");
+    }
+
+    printf("=================Configuration=================\n");
     printf("Thread num: %i\n", thread_num);
     if (https)
     {
@@ -95,7 +96,16 @@ int main(int argc, char* argv[])
     {
         printf("Protocol: %s\n", "http");
     }
-    printf("Auto pick server: %i\n", auto_pick_server);
+    if (auto_pick_server)
+    {
+        printf("Auto pick server: True\n");
+    }
+    else
+    {
+        printf("Auto pick server: False\n");
+    }
+    
+    printf("===============================================\n");
 
     // Run speed test
     run_speed_test(thread_num, https, auto_pick_server);

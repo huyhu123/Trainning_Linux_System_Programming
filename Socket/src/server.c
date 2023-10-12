@@ -18,7 +18,7 @@ void reverse_string(char *str)
     int j = 0;
     char temp = 0;
 
-    for (i = 0, j = strlen(str) - 1; i < j; i++, j--)
+    for (i = 0, j = str_len(str) - 1; i < j; i++, j--)
     {
         temp = str[i];
         str[i] = str[j];
@@ -49,7 +49,7 @@ void *handle_client(void *arg)
             reverse_string(recv_buff);
 
             // Send reverse message to client
-            write(connfd, recv_buff, strlen(recv_buff));
+            write(connfd, recv_buff, str_len(recv_buff));
             printf("Send message to client: %s\n", recv_buff);
         }
         else if (read_val == 0) // Client close connection

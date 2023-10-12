@@ -38,7 +38,7 @@ void test_speed(char *host, int port, char *message) {
     }
 
     // Send the message
-    bytes_sent = send(sockfd, message, strlen(message), 0);
+    bytes_sent = send(sockfd, message, str_len(message), 0);
     if (bytes_sent < 0) {
         perror("Error sending message");
         exit(EXIT_FAILURE);

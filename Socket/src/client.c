@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
         fgets(sendBuff, sizeof(sendBuff), stdin);
 
         // Send message to server
-        write(sockfd, sendBuff, strlen(sendBuff));
+        write(sockfd, sendBuff, str_len(sendBuff));
 
         // Clear reveive buffer
         memset(recv_buff, '0', sizeof(recv_buff));

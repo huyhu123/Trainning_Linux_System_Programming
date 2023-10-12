@@ -1,1 +1,0 @@
-can you also add multi thread to calculate the download speed in a period of time and mutex like the upload function

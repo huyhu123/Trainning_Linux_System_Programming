@@ -34,43 +34,47 @@ int main(int argc, char* argv[])
             printf("\t Choose number of thread (Default 3): -t=<Number of thread> \n");
             printf("\t Choose protocol (Default https): -p=<Protocol (http/https)> \n");
             printf("\t Choose server manually (Default auto): -m \n");
+            printf("\t Example: ./main -t=5 -p=https -m \n");
             return 0;
         }
-
-        // Auto pick best server
-        if (strcmp(argv[count], "-m") == 0)
+        else if (strcmp(argv[count], "-m") == 0)
         {
             auto_pick_server = false;
             count++;
             continue;
         }
-
-        token = strtok(argv[count], "=");
-
-        // Number of thread
-        if (strcmp(token, "-t") == 0)
+        else
         {
-            token = strtok(NULL, "=");
-            // Check if argv[count] is interger
-            if (!is_integer(token, &thread_num, 0, 100))
-            {
-                printf("Wrong input format (For help: --help)\n");
-                return 0;
-            }
-        }
+            token = strtok(argv[count], "=");
 
-        // Protocol
-        if (strcmp(token, "-p") == 0)
-        {
-            token = strtok(NULL, "=");
-            // Check if argv[count] is interger
-            if (strcmp(token, "http") == 0)
+            // Number of thread
+            if (strcmp(token, "-t") == 0)
             {
-                https = false;
+                token = strtok(NULL, "=");
+                // Check if argv[count] is interger
+                if (!is_integer(token, &thread_num, 0, 100))
+                {
+                    printf("Wrong input format (For help: --help)\n");
+                    return 0;
+                }
             }
-            else if (strcmp(token, "https") == 0)
+            else if (strcmp(token, "-p") == 0)
             {
-                https = true;
+                token = strtok(NULL, "=");
+                
+                if (strcmp(token, "http") == 0)
+                {
+                    https = false;
+                }
+                else if (strcmp(token, "https") == 0)
+                {
+                    https = true;
+                }
+                else
+                {
+                    printf("Wrong input format (For help: --help)\n");
+                    return 0;
+                }
             }
             else
             {
@@ -83,9 +87,17 @@ int main(int argc, char* argv[])
     }
 
     printf("Thread num: %i\n", thread_num);
-    printf("Protocol: %i\n", https);
+    if (https)
+    {
+        printf("Protocol: %s\n", "https");
+    }
+    else
+    {
+        printf("Protocol: %s\n", "http");
+    }
     printf("Auto pick server: %i\n", auto_pick_server);
 
+    // Run speed test
     run_speed_test(thread_num, https, auto_pick_server);
 
     return 0;

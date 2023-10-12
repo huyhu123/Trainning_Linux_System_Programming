@@ -1,18 +1,6 @@
-#include <stdio.h>
-#include <curl/curl.h>
-#include <stdlib.h>
-#include <string.h>
-#include <pthread.h>
-#include <unistd.h>
-
 #include "servers.h"
 #include "speed_test.h"
 #include "input.h"
-
-void check_input(int argc, char* argv[])
-{
-    
-}
 
 int main(int argc, char* argv[])
 {

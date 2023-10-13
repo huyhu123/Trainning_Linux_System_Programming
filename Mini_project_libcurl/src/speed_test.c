@@ -2,12 +2,18 @@
 
 // File for upload test
 const char *file_path = "upload.txt";
+int test_time = 3;
 
 int g_timeout_threshold = 1;
 
 void set_timeout_threshold(int timeout_threshold)
 {
     g_timeout_threshold = timeout_threshold;
+}
+
+void set_test_time(int time)
+{
+    test_time = time;
 }
 
 // Thread function to test internet upload speed
@@ -54,7 +60,7 @@ void *test_upload_speed_thread(void *arg)
             {
                 // fprintf(stderr, "Upload failed: %s\n", curl_easy_strerror(res));
             }
-        } while (time(NULL) - start_time < DURATION_SECONDS);
+        } while (time(NULL) - start_time < test_time);
 
         // Clean up
         curl_easy_cleanup(curl);
@@ -65,7 +71,7 @@ void *test_upload_speed_thread(void *arg)
 
     // Calculate average upload speed
     pthread_mutex_lock(mutex);
-    thread_data->avg_speed = upload_speed / DURATION_SECONDS;
+    thread_data->avg_speed = upload_speed / test_time;
     pthread_mutex_unlock(mutex);
 
     pthread_exit(NULL);
@@ -148,7 +154,7 @@ void *test_download_speed_thread(void *arg)
             {
                 // fprintf(stderr, "Upload failed: %s\n", curl_easy_strerror(res));
             }
-        } while (time(NULL) - start_time < DURATION_SECONDS);
+        } while (time(NULL) - start_time < test_time);
 
         // Clean up
         curl_easy_cleanup(curl);
@@ -159,7 +165,7 @@ void *test_download_speed_thread(void *arg)
 
     // Calculate average upload speed
     pthread_mutex_lock(mutex);
-    thread_data->avg_speed = download_speed / DURATION_SECONDS;
+    thread_data->avg_speed = download_speed / test_time;
     pthread_mutex_unlock(mutex);
 
     pthread_exit(NULL);

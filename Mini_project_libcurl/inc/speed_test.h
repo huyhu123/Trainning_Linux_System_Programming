@@ -11,9 +11,6 @@
 #include "servers.h"
 #include "input.h"
 
-// Duration to mesure speed
-#define DURATION_SECONDS 3
-
 #define MAX_LENGTH 500
 #define MAX_NUM_THREADS 100
 
@@ -32,5 +29,7 @@ double test_download_speed(const char *url, int num_thread);
 void run_speed_test(int num_thread, bool https, bool auto_pick_server);
 
 void set_timeout_threshold(int timeout_threshold);
+
+void set_test_time(int time);
 
 #endif

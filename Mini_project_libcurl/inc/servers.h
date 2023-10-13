@@ -16,8 +16,8 @@
 #define STRING_LENGTH 200
 #define FILE_LENGTH 10000
 
-#define MAX_SERVERS 20
 #define TIMEOUT_THRESHOLD 1
+#define MAX_SERVER 100
 
 typedef struct
 {
@@ -52,5 +52,7 @@ void print_servers(int server_num);
 size_t discard_response(void *ptr, size_t size, size_t nmemb, void *data);
 
 char *get_server_url(int index);
+
+void set_max_server(int max_server);
 
 #endif

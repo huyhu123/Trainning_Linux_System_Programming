@@ -537,4 +537,3 @@ int check_server_https(server_data_t server_data)
 
     return 0;
 }
-

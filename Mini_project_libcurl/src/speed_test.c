@@ -3,13 +3,18 @@
 // File for upload test
 const char *file_path = "upload.txt";
 
+int g_timeout_threshold = 1;
+
+void set_timeout_threshold(int timeout_threshold)
+{
+    g_timeout_threshold = timeout_threshold;
+}
+
 // Thread function to test internet upload speed
 void *test_upload_speed_thread(void *arg)
 {
     ThreadData *thread_data = (ThreadData *)arg;
-
     pthread_mutex_t *mutex = thread_data->mutex;
-
     CURL *curl;
     CURLcode res;
     double upload_speed = 0.0;
@@ -33,7 +38,7 @@ void *test_upload_speed_thread(void *arg)
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, discard_response);
 
         // Set the timeout for the upload connection
-        curl_easy_setopt(curl, CURLOPT_TIMEOUT, TIMEOUT_THRESHOLD);
+        curl_easy_setopt(curl, CURLOPT_TIMEOUT, g_timeout_threshold);
 
         // Perform the upload for the specified duration
         start_time = time(NULL);
@@ -124,7 +129,7 @@ void *test_download_speed_thread(void *arg)
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, discard_response);
 
         // Set timeout option
-        curl_easy_setopt(curl, CURLOPT_TIMEOUT, TIMEOUT_THRESHOLD);
+        curl_easy_setopt(curl, CURLOPT_TIMEOUT, g_timeout_threshold);
 
         // Perform the download
         res = curl_easy_perform(curl);

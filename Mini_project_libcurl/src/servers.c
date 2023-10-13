@@ -1,7 +1,14 @@
 #include "servers.h"
 
-server_t servers[MAX_SERVERS];
+int g_max_server = 20;
+
+server_t servers[MAX_SERVER];
 server_t client_server;
+
+void set_max_server(int max_server)
+{
+    g_max_server = max_server;
+}
 
 // Function to discard response data
 size_t discard_response(void *ptr, size_t size, size_t nmemb, void *data)
@@ -17,14 +24,14 @@ char *get_server_url(int index)
 
 void delete_server_by_index(int index)
 {
-    if (index < 0 || index >= MAX_SERVERS)
+    if (index < 0 || index >= g_max_server)
     {
         printf("Invalid index!");
         return;
     }
 
     // Shift elements to the left starting from the index
-    for (int i = index; i < MAX_SERVERS - 1; i++)
+    for (int i = index; i < g_max_server - 1; i++)
     {
         strcpy(servers[i].url, servers[i + 1].url);
         strcpy(servers[i].lat, servers[i + 1].lat);
@@ -43,7 +50,7 @@ void delete_server_by_index(int index)
     }
 
     // Clear the last element
-    memset(&servers[MAX_SERVERS - 1], 0, sizeof(server_t));
+    memset(&servers[g_max_server - 1], 0, sizeof(server_t));
 }
 
 // Haversine formula
@@ -112,10 +119,10 @@ void replace(char str[], char sub[], char nstr[])
 // Function to find the best server nearby
 void find_best_server()
 {
-    CURL *curl;
+    CURL *curl = NULL;
     CURLcode res;
-    struct json_object *json_servers;
-    struct json_object *json_server;
+    struct json_object *json_servers = NULL;
+    struct json_object *json_server = NULL;
 
     // Redirect stdout to output.txt
     freopen("output.txt", "w", stdout);
@@ -145,9 +152,9 @@ void find_best_server()
 
 int parse_server_data(bool https)
 {
-    char line[FILE_LENGTH];
+    char line[FILE_LENGTH] = {0};
     int i = 0;
-    char *token;
+    char *token = NULL;
     int count = 0;
 
     FILE *file = fopen("output.txt", "r");
@@ -182,7 +189,7 @@ int parse_server_data(bool https)
 
         token = strtok(NULL, "!");
 
-        if (i + 1 > MAX_SERVERS)
+        if (i + 1 > g_max_server)
         {
             break;
         }
@@ -228,7 +235,7 @@ int parse_server_data(bool https)
 
 void format_url(int server_num)
 {
-    char *token;
+    char *token = NULL;
 
     for (int i = 0; i < server_num; i++)
     {

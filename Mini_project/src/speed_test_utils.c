@@ -100,7 +100,7 @@ int get_http_file(struct sockaddr_in *serv, char *domain_name, char *request_url
             "Accept: */*\r\n\r\n",
             request_url, domain_name);
 
-    if (send(fd, sbuf, str_len(sbuf), 0) != str_len(sbuf))
+    if (send(fd, sbuf, strlen(sbuf), 0) != strlen(sbuf))
     {
         perror("Can't send data to server\n");
         if (fd)
@@ -140,7 +140,7 @@ int get_http_file(struct sockaddr_in *serv, char *domain_name, char *request_url
                 if ((ptr = strstr(rbuf, "\r\n\r\n")) != NULL)
                 {
                     ptr += 4;
-                    fwrite(ptr, 1, str_len(ptr), fp);
+                    fwrite(ptr, 1, strlen(ptr), fp);
                 }
                 else
                 {
@@ -209,7 +209,7 @@ int get_https_file(struct sockaddr_in *serv, char *domain_name, char *request_ur
             "Connection: close\r\n\r\n",
             request_url, domain_name);
 
-    if (SSL_write(ssl, sbuf, str_len(sbuf)) != str_len(sbuf))
+    if (SSL_write(ssl, sbuf, strlen(sbuf)) != strlen(sbuf))
     {
         perror("Can't send data to server\n");
         SSL_free(ssl);
@@ -252,7 +252,7 @@ int get_https_file(struct sockaddr_in *serv, char *domain_name, char *request_ur
                 if ((ptr = strstr(rbuf, "\r\n\r\n")) != NULL)
                 {
                     ptr += 4;
-                    fwrite(ptr, 1, str_len(ptr), fp);
+                    fwrite(ptr, 1, strlen(ptr), fp);
                 }
                 else
                 {

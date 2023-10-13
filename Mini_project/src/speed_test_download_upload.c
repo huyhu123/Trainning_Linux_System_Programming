@@ -121,7 +121,7 @@ void *download_thread(void *arg)
             "Accept: */*\r\n\r\n",
             thread[i].request_url, thread[i].domain_name);
 
-    if (send(fd, sbuf, str_len(sbuf), 0) != str_len(sbuf))
+    if (send(fd, sbuf, strlen(sbuf), 0) != strlen(sbuf))
     {
         perror("Can't send data to server\n");
         goto err;
@@ -186,7 +186,7 @@ int speedtest_download(server_data_t *nearest_server, int thread_num)
     while (ptr != NULL)
     {
         memset(buf, 0, sizeof(buf));
-        strncpy(buf, ptr, str_len(ptr));
+        strncpy(buf, ptr, strlen(ptr));
 
         // Change file name
         if (strstr(buf, "upload.") != NULL)
@@ -264,7 +264,7 @@ void *upload_thread(void *arg)
             "Content-Length: %ld\r\n\r\n",
             thread[i].request_url, thread[i].domain_name, sizeof(data) * UL_BUFFER_TIMES);
 
-    if ((size = send(fd, sbuf, str_len(sbuf), 0)) != str_len(sbuf))
+    if ((size = send(fd, sbuf, strlen(sbuf), 0)) != strlen(sbuf))
     {
         printf("Can't send header to server\n");
         goto err;
